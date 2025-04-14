@@ -1,0 +1,6 @@
+@ImagineHubAPI_HostAddress = http://localhost:5169
+
+GET {{ImagineHubAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
