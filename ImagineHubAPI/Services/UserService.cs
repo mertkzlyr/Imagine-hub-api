@@ -12,7 +12,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace ImagineHubAPI.Services;
 
-public class UserService(IUserRepository userRepository, ITokenService tokenService, RsaEncryptionService rsaEncryptionService) : IUserService
+public class UserService(IUserRepository userRepository, ITokenService tokenService, PasswordHasherService hasher) : IUserService
 {
     public async Task<User> GetUserByIdAsync(int id)
     {
@@ -25,9 +25,8 @@ public class UserService(IUserRepository userRepository, ITokenService tokenServ
         if (user == null)
             return null;
 
-        var decryptedPassword = rsaEncryptionService.Decrypt(user.Password);
-
-        if (decryptedPassword != request.Password)
+        var passwordIsValid = hasher.VerifyPassword(request.Password, user.Password);
+        if (!passwordIsValid)
             return null;
 
         var token = tokenService.CreateToken(user);
@@ -39,7 +38,7 @@ public class UserService(IUserRepository userRepository, ITokenService tokenServ
         if (await userRepository.GetByEmailAsync(registerDto.Email) != null)
             return "Email is already in use.";
 
-        var encryptedPassword = rsaEncryptionService.Encrypt(registerDto.Password);
+        var hashedPassword = hasher.HashPassword(registerDto.Password);
 
         var user = new User
         {
@@ -48,7 +47,7 @@ public class UserService(IUserRepository userRepository, ITokenService tokenServ
             Surname = registerDto.Surname,
             MiddleName = registerDto.MiddleName,
             Email = registerDto.Email,
-            Password = encryptedPassword,
+            Password = hashedPassword,
             PhoneNumber = registerDto.PhoneNumber,
             City = registerDto.City,
             State = registerDto.State,

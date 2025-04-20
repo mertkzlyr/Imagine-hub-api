@@ -23,12 +23,13 @@ builder.Services.AddDbContext<DataContext>(options =>
 
 // Register repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IAdminRepository, AdminRepository>();
 
 // Register services
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddSingleton<ITokenService, TokenService>();
-builder.Services.AddSingleton<RsaEncryptionService>(sp => 
-    new RsaEncryptionService("private.key", "public.key"));
+builder.Services.AddScoped<PasswordHasherService>();
 
 var app = builder.Build();
 
