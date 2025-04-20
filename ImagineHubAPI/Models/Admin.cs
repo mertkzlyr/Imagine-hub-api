@@ -9,6 +9,7 @@ public class Admin
     public string? MiddleName { get; set; }
     public string Email { get; set; }
     public string Password { get; set; }
+    public string Role { get; set; } = "admin";
     public string? PhoneNumber { get; set; }
     public string? City { get; set; }
     public string? State { get; set; }
