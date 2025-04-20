@@ -1,6 +1,7 @@
 using ImagineHubAPI.Data;
 using ImagineHubAPI.Interfaces;
 using ImagineHubAPI.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace ImagineHubAPI.Repositories;
 
@@ -19,16 +20,33 @@ public class UserRepository(DataContext context) : IUserRepository
 
     public async Task<User> AddAsync(User entity)
     {
-        throw new NotImplementedException();
+        await context.Users.AddAsync(entity);
+        await context.SaveChangesAsync();
+        return entity;
     }
 
     public async Task<User> UpdateAsync(User entity)
     {
-        throw new NotImplementedException();
+        var existingUser = await context.Users.FindAsync(entity.Id);
+        if (existingUser == null)
+        {
+            throw new KeyNotFoundException("User not found.");
+        }
+
+        context.Entry(existingUser).CurrentValues.SetValues(entity);
+        await context.SaveChangesAsync();
+        return existingUser;
     }
 
     public async Task<User> DeleteAsync(int id)
     {
         throw new NotImplementedException();
+    }
+
+    public async Task<User?> GetByEmailAsync(string email)
+    {
+        var user = await context.Users.FirstOrDefaultAsync(u => u.Email == email);
+        
+        return user;
     }
 }

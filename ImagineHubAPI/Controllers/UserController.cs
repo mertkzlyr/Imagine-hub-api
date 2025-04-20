@@ -1,4 +1,5 @@
 using ImagineHubAPI.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ImagineHubAPI.Controllers;
@@ -8,6 +9,7 @@ namespace ImagineHubAPI.Controllers;
 public class UserController(IUserService userService) : ControllerBase
 {
     [HttpGet("{id}")]
+    [Authorize(Policy = "UserPolicy")]
     public async Task<IActionResult> GetUserById(int id)
     {
         try
