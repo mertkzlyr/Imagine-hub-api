@@ -7,4 +7,5 @@ public interface IAdminService
 {
     Task<List<User>> GetAllUsersAsync();
     Task<LoginResponse?> AdminLoginAsync(LoginRequest request);
+    Task<string> DeleteUserAsync(int id);
 }

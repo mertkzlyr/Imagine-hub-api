@@ -30,4 +30,24 @@ public class AdminRepository(DataContext context) : IAdminRepository
         
         return admin;
     }
+
+    public async Task<Admin> GetByIdAsync(int id)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<Admin> AddAsync(Admin entity)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<Admin> UpdateAsync(Admin entity)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<Admin> DeleteAsync(int id)
+    {
+        throw new NotImplementedException();
+    }
 }

@@ -40,7 +40,15 @@ public class UserRepository(DataContext context) : IUserRepository
 
     public async Task<User> DeleteAsync(int id)
     {
-        throw new NotImplementedException();
+        var user = await context.Users.FindAsync(id);
+        if (user == null)
+        {
+            throw new KeyNotFoundException("User not found.");
+        }
+
+        context.Users.Remove(user);
+        await context.SaveChangesAsync();
+        return user;
     }
 
     public async Task<User?> GetByEmailAsync(string email)
