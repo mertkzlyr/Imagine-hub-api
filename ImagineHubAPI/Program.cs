@@ -1,6 +1,7 @@
 using ImagineHubAPI.Config;
 using ImagineHubAPI.Data;
 using ImagineHubAPI.Interfaces;
+using ImagineHubAPI.Middlewares;
 using ImagineHubAPI.Repositories;
 using ImagineHubAPI.Services;
 using Microsoft.EntityFrameworkCore;
@@ -24,12 +25,14 @@ builder.Services.AddDbContext<DataContext>(options =>
 // Register repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAdminRepository, AdminRepository>();
+builder.Services.AddScoped<IFollowRepository, FollowRepository>();
 
 // Register services
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddSingleton<ITokenService, TokenService>();
 builder.Services.AddScoped<PasswordHasherService>();
+builder.Services.AddScoped<IFollowService, FollowService>();
 
 var app = builder.Build();
 
@@ -42,6 +45,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
+app.UseMiddleware<UserIdMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();

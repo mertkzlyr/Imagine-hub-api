@@ -7,4 +7,23 @@ public class DataContext(DbContextOptions<DataContext> options) : DbContext(opti
 {
     public DbSet<User> Users { get; set; }
     public DbSet<Admin> Admins { get; set; }
+    public DbSet<UserFollows> UserFollows { get; set; }
+    
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<UserFollows>()
+            .HasKey(uf => new { uf.FollowerId, uf.FolloweeId });
+
+        modelBuilder.Entity<UserFollows>()
+            .HasOne(uf => uf.Follower)
+            .WithMany(u => u.Following)
+            .HasForeignKey(uf => uf.FollowerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<UserFollows>()
+            .HasOne(uf => uf.Followee)
+            .WithMany(u => u.Followers)
+            .HasForeignKey(uf => uf.FolloweeId)
+            .OnDelete(DeleteBehavior.Restrict);
+    } 
 }
