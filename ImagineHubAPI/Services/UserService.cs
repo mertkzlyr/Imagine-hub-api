@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using ImagineHubAPI.Config;
 using ImagineHubAPI.DTOs.AuthDTOs;
+using ImagineHubAPI.DTOs.UserDTOs;
 using ImagineHubAPI.Helpers;
 using ImagineHubAPI.Interfaces;
 using ImagineHubAPI.Models;
@@ -14,9 +15,33 @@ namespace ImagineHubAPI.Services;
 
 public class UserService(IUserRepository userRepository, ITokenService tokenService, PasswordHasherService hasher) : IUserService
 {
-    public async Task<User> GetUserByIdAsync(int id)
+    public async Task<UserDto> GetUserByIdAsync(int id)
     {
-        return await userRepository.GetByIdAsync(id);
+        var user = await userRepository.GetByIdAsync(id);
+
+        var userDto = new UserDto
+        {
+            Id = user.Id,
+            Username = user.Username,
+            Name = user.Name,
+            Surname = user.Surname,
+            City = user.City,
+            Country = user.Country,
+            CreatedAt = user.CreatedAt,
+            ProfilePicture = user.ProfilePicture,
+            Followers = user.Followers.Select(f => new FollowerDto
+            {
+                Id = f.Follower.Id,
+                Username = f.Follower.Username
+            }).ToList(),
+            Following = user.Following.Select(f => new FollowingDto
+            {
+                Id = f.Followee.Id,
+                Username = f.Followee.Username
+            }).ToList()
+        };
+        
+        return userDto;
     }
 
     public async Task<LoginResponse?> AuthenticateAsync(LoginRequest request)

@@ -9,7 +9,12 @@ public class UserRepository(DataContext context) : IUserRepository
 {
     public async Task<User> GetByIdAsync(int id)
     {
-        var user = await context.Users.FindAsync(id);
+        var user = await context.Users
+            .Include(u => u.Followers)
+            .ThenInclude(uf => uf.Follower)
+            .Include(u => u.Following)
+            .ThenInclude(uf => uf.Followee)
+            .FirstOrDefaultAsync(u => u.Id == id);
         if (user == null)
         {
             throw new KeyNotFoundException("User not found.");

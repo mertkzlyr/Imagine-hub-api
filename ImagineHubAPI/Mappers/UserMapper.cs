@@ -11,14 +11,9 @@ public static class UserMapper
         Username = user.Username,
         Name = user.Name,
         Surname = user.Surname,
-        MiddleName = user.MiddleName,
-        Email = user.Email,
-        PhoneNumber = user.PhoneNumber,
         City = user.City,
-        State = user.State,
         Country = user.Country,
         CreatedAt = user.CreatedAt,
-        UpdatedAt = user.UpdatedAt,
         ProfilePicture = user.ProfilePicture
     };
 }
