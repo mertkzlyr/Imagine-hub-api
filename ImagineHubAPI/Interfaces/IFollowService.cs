@@ -7,6 +7,6 @@ public interface IFollowService
 {
     Task FollowAsync(int followerId, int followeeId);
     Task UnfollowAsync(int followerId, int followeeId);
-    Task<List<UserDto>> GetFollowersAsync(int userId);
-    Task<List<UserDto>> GetFollowingAsync(int userId);
+    Task<ResultList<UserDto>> GetFollowersAsync(int userId, int page, int pageSize);
+    Task<ResultList<UserDto>> GetFollowingAsync(int userId, int page, int pageSize);
 }

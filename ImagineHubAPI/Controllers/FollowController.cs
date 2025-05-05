@@ -1,5 +1,6 @@
 using ImagineHubAPI.Extensions;
 using ImagineHubAPI.Interfaces;
+using ImagineHubAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -38,28 +39,37 @@ public class FollowController(IFollowService followService) : ControllerBase
     }
 
     [HttpGet("followers")]
-    public async Task<IActionResult> GetFollowers()
+    public async Task<IActionResult> GetFollowers([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
         var userId = HttpContext.GetUserId();
         if (userId == null)
         {
-            return Unauthorized(new { message = "User not authenticated." });
+            return Unauthorized(new Result
+            {
+                Success = false,
+                Message = "User not authenticated."
+            });
         }
-        
-        var followers = await followService.GetFollowersAsync(userId.Value);
-        return Ok(followers);
+
+        var followersResult = await followService.GetFollowersAsync(userId.Value, page, pageSize);
+        return Ok(followersResult);
     }
 
     [HttpGet("following")]
-    public async Task<IActionResult> GetFollowing()
+    public async Task<IActionResult> GetFollowing([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
         var userId = HttpContext.GetUserId();
         if (userId == null)
         {
-            return Unauthorized(new { message = "User not authenticated." });
+            return Unauthorized(new Result
+            {
+                Success = false,
+                Message = "User not authenticated."
+            });
         }
-        
-        var following = await followService.GetFollowingAsync(userId.Value);
-        return Ok(following);
+
+        var followingResult = await followService.GetFollowingAsync(userId.Value, page, pageSize);
+        return Ok(followingResult);
     }
+
 }

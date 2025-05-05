@@ -18,21 +18,53 @@ public class FollowService(IFollowRepository followRepository) : IFollowService
         await followRepository.UnfollowAsync(followerId, followeeId);
     }
 
-    public async Task<List<UserDto>> GetFollowersAsync(int userId)
+    public async Task<ResultList<UserDto>> GetFollowersAsync(int userId, int page, int pageSize)
     {
-        var followers = await followRepository.GetFollowersAsync(userId);
-        
-        var followersDtos = followers.Select(UserMapper.ToDto);
+        var (followers, totalCount) = await followRepository.GetFollowersAsync(userId, page, pageSize);
 
-        return followersDtos.ToList();
+        var followerDtos = followers.Select(UserMapper.ToDto).ToList();
+
+        var pagination = new PaginationInformation
+        {
+            From = (page - 1) * pageSize + 1,
+            To = Math.Min(page * pageSize, totalCount),
+            Total = totalCount,
+            CurrentPage = page,
+            PageSize = pageSize,
+            TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+        };
+
+        return new ResultList<UserDto>
+        {
+            Success = true,
+            Message = "Followers retrieved successfully.",
+            Data = followerDtos,
+            Pagination = pagination
+        };
     }
 
-    public async Task<List<UserDto>> GetFollowingAsync(int userId)
+    public async Task<ResultList<UserDto>> GetFollowingAsync(int userId, int page, int pageSize)
     {
-        var followings = await followRepository.GetFollowingAsync(userId);
+        var (following, totalCount) = await followRepository.GetFollowingAsync(userId, page, pageSize);
 
-        var followingDtos = followings.Select(UserMapper.ToDto);
-        
-        return followingDtos.ToList();
+        var followingDtos = following.Select(UserMapper.ToDto).ToList();
+
+        var pagination = new PaginationInformation
+        {
+            From = (page - 1) * pageSize + 1,
+            To = Math.Min(page * pageSize, totalCount),
+            Total = totalCount,
+            CurrentPage = page,
+            PageSize = pageSize,
+            TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+        };
+
+        return new ResultList<UserDto>
+        {
+            Success = true,
+            Message = "Following retrieved successfully.",
+            Data = followingDtos,
+            Pagination = pagination
+        };
     }
 }

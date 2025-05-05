@@ -41,19 +41,34 @@ public class FollowRepository(DataContext context) : IFollowRepository
         }
     }
 
-    public async Task<List<User>> GetFollowersAsync(int userId)
+    public async Task<(List<User> Users, int TotalCount)> GetFollowersAsync(int userId, int page, int pageSize)
     {
-        return await context.UserFollows
+        var query = context.UserFollows
             .Where(f => f.FolloweeId == userId)
-            .Select(f => f.Follower)
+            .Select(f => f.Follower);
+
+        var totalCount = await query.CountAsync();
+        var users = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
+
+        return (users, totalCount);
+    }
+    
+    public async Task<(List<User> Users, int TotalCount)> GetFollowingAsync(int userId, int page, int pageSize)
+    {
+        var query = context.UserFollows
+            .Where(f => f.FollowerId == userId)
+            .Select(f => f.Followee);
+
+        var totalCount = await query.CountAsync();
+        var users = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (users, totalCount);
     }
 
-    public async Task<List<User>> GetFollowingAsync(int userId)
-    {
-        return await context.UserFollows
-            .Where(f => f.FollowerId == userId)
-            .Select(f => f.Followee)
-            .ToListAsync();
-    }
 }
