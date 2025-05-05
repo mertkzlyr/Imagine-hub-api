@@ -6,7 +6,7 @@ namespace ImagineHubAPI.Interfaces;
 
 public interface IUserService
 {
-    Task<UserDto> GetUserByIdAsync(int id);
-    Task<LoginResponse?> AuthenticateAsync(LoginRequest request);
-    Task<string> RegisterUser(RegisterDto registerDto);
+    Task<Result<UserDto>> GetUserByIdAsync(int id);
+    Task<Result<LoginResponse>> AuthenticateAsync(LoginRequest request);
+    Task<Result> RegisterUser(RegisterDto registerDto);
 }

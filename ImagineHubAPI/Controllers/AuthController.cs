@@ -13,20 +13,20 @@ public class AuthController(IUserService userService) : ControllerBase
     {
         var result = await userService.AuthenticateAsync(request);
 
-        if (result == null)
-            return Unauthorized(new { message = "Invalid email or password." });
+        if (!result.Success)
+            return Unauthorized(result);
 
         return Ok(result);
     }
-    
+
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
     {
         var result = await userService.RegisterUser(registerDto);
 
-        if (result != "User registered successfully.")
-            return BadRequest(new { message = result });
+        if (!result.Success)
+            return BadRequest(result);
 
-        return Ok(new { message = result });
+        return Ok(result);
     }
 }

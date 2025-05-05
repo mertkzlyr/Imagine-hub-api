@@ -1,23 +1,25 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
-using ImagineHubAPI.Config;
 using ImagineHubAPI.DTOs.AuthDTOs;
 using ImagineHubAPI.DTOs.UserDTOs;
-using ImagineHubAPI.Helpers;
 using ImagineHubAPI.Interfaces;
 using ImagineHubAPI.Models;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 
 namespace ImagineHubAPI.Services;
 
 public class UserService(IUserRepository userRepository, ITokenService tokenService, PasswordHasherService hasher) : IUserService
 {
-    public async Task<UserDto> GetUserByIdAsync(int id)
+    public async Task<Result<UserDto>> GetUserByIdAsync(int id)
     {
         var user = await userRepository.GetByIdAsync(id);
+
+        if (user == null)
+        {
+            return new Result<UserDto>
+            {
+                Success = false,
+                Message = "User not found.",
+                Data = null
+            };
+        }
 
         var userDto = new UserDto
         {
@@ -40,28 +42,48 @@ public class UserService(IUserRepository userRepository, ITokenService tokenServ
                 Username = f.Followee.Username
             }).ToList()
         };
-        
-        return userDto;
+
+        return new Result<UserDto>
+        {
+            Success = true,
+            Message = "User retrieved successfully.",
+            Data = userDto
+        };
     }
 
-    public async Task<LoginResponse?> AuthenticateAsync(LoginRequest request)
+
+    public async Task<Result<LoginResponse>> AuthenticateAsync(LoginRequest request)
     {
         var user = await userRepository.GetByEmailAsync(request.Email);
-        if (user == null)
-            return null;
-
-        var passwordIsValid = hasher.VerifyPassword(request.Password, user.Password);
-        if (!passwordIsValid)
-            return null;
+        if (user == null || !hasher.VerifyPassword(request.Password, user.Password))
+        {
+            return new Result<LoginResponse>
+            {
+                Success = false,
+                Message = "Invalid email or password.",
+                Data = null
+            };
+        }
 
         var token = tokenService.CreateToken(user);
-        return new LoginResponse { Token = token };
+        return new Result<LoginResponse>
+        {
+            Success = true,
+            Message = "Authentication successful.",
+            Data = new LoginResponse { Token = token }
+        };
     }
 
-    public async Task<string> RegisterUser(RegisterDto registerDto)
+    public async Task<Result> RegisterUser(RegisterDto registerDto)
     {
         if (await userRepository.GetByEmailAsync(registerDto.Email) != null)
-            return "Email is already in use.";
+        {
+            return new Result
+            {
+                Success = false,
+                Message = "Email is already in use."
+            };
+        }
 
         var hashedPassword = hasher.HashPassword(registerDto.Password);
 
@@ -81,6 +103,12 @@ public class UserService(IUserRepository userRepository, ITokenService tokenServ
         };
 
         await userRepository.AddAsync(user);
-        return "User registered successfully.";
+
+        return new Result
+        {
+            Success = true,
+            Message = "User registered successfully."
+        };
     }
+
 }
