@@ -8,6 +8,7 @@ public class DataContext(DbContextOptions<DataContext> options) : DbContext(opti
     public DbSet<User> Users { get; set; }
     public DbSet<Admin> Admins { get; set; }
     public DbSet<UserFollows> UserFollows { get; set; }
+    public DbSet<Post> Posts { get; set; }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -26,6 +26,7 @@ builder.Services.AddDbContext<DataContext>(options =>
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAdminRepository, AdminRepository>();
 builder.Services.AddScoped<IFollowRepository, FollowRepository>();
+builder.Services.AddScoped<IPostRepository, PostRepository>();
 
 // Register services
 builder.Services.AddScoped<IUserService, UserService>();
@@ -33,6 +34,7 @@ builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddSingleton<ITokenService, TokenService>();
 builder.Services.AddScoped<PasswordHasherService>();
 builder.Services.AddScoped<IFollowService, FollowService>();
+builder.Services.AddScoped<IPostService, PostService>();
 
 var app = builder.Build();
 
