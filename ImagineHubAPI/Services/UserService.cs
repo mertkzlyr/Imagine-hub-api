@@ -31,16 +31,8 @@ public class UserService(IUserRepository userRepository, ITokenService tokenServ
             Country = user.Country,
             CreatedAt = user.CreatedAt,
             ProfilePicture = user.ProfilePicture,
-            Followers = user.Followers.Select(f => new FollowerDto
-            {
-                Id = f.Follower.Id,
-                Username = f.Follower.Username
-            }).ToList(),
-            Following = user.Following.Select(f => new FollowingDto
-            {
-                Id = f.Followee.Id,
-                Username = f.Followee.Username
-            }).ToList()
+            Followers = user.Followers.Count,
+            Following = user.Following.Count
         };
 
         return new Result<UserDto>

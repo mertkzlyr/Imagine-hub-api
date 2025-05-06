@@ -11,6 +11,6 @@ public class UserDto
     public DateTime CreatedAt { get; set; }
     public string? ProfilePicture { get; set; }
     
-    public List<FollowerDto> Followers { get; set; }
-    public List<FollowingDto> Following { get; set; }
+    public int Followers { get; set; }
+    public int Following { get; set; }
 }
