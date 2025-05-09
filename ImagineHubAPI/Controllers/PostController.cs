@@ -102,4 +102,26 @@ public class PostController(IPostService postService) : ControllerBase
 
         return Ok(result);
     }
+    
+    [HttpPut("update-description")]
+    [Authorize]
+    public async Task<IActionResult> UpdateDescription([FromBody] UpdatePostDto updatePostDto)
+    {
+        var postId = updatePostDto.PostId;
+        var description = updatePostDto.Description;
+
+        if (postId == Guid.Empty || string.IsNullOrWhiteSpace(description))
+            return BadRequest(new { message = "Invalid post ID or description." });
+        
+        var userId = HttpContext.GetUserId();
+        if (userId == null)
+            return Unauthorized(new { message = "User not authenticated." });
+
+        var result = await postService.UpdatePostDescriptionAsync(userId.Value, postId, description);
+
+        if (!result.Success)
+            return BadRequest(new { message = result.Message });
+
+        return Ok(result);
+    }
 }

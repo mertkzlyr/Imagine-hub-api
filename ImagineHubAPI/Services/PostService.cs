@@ -156,4 +156,9 @@ public class PostService(IPostRepository postRepository) : IPostService
     {
         return await postRepository.UnlikePostAsync(userId, postId);
     }
+
+    public async Task<Result> UpdatePostDescriptionAsync(int userId, Guid postId, string description)
+    {
+        return await postRepository.UpdatePostAsync(userId, postId, description);
+    }
 }

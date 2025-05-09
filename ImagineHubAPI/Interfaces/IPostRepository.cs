@@ -10,4 +10,5 @@ public interface IPostRepository
     Task<ResultList<Post>> GetPostsByUserAsync(int userId, int page, int pageSize);
     Task<Result> LikePostAsync(int userId, Guid postId);
     Task<Result> UnlikePostAsync(int userId, Guid postId);
+    Task<Result> UpdatePostAsync(int userId, Guid postId, string description);
 }

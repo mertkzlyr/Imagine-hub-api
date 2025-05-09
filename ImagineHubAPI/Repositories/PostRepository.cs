@@ -184,4 +184,37 @@ public class PostRepository(DataContext context) : IPostRepository
             Message = "Post unliked successfully."
         };
     }
+
+    public async Task<Result> UpdatePostAsync(int userId, Guid postId, string description)
+    {
+        var post = await context.Posts.FindAsync(postId);
+
+        if (post == null)
+        {
+            return new Result
+            {
+                Success = false,
+                Message = "Post not found."
+            };
+        }
+
+        if (post.UserId != userId)
+        {
+            return new Result
+            {
+                Success = false,
+                Message = "Unauthorized: You can only update your own posts."
+            };
+        }
+
+        post.Description = description;
+        context.Posts.Update(post);
+        await context.SaveChangesAsync();
+
+        return new Result
+        {
+            Success = true,
+            Message = "Post description updated successfully."
+        };
+    }
 }
