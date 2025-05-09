@@ -21,6 +21,23 @@ public class PostController(IPostService postService) : ControllerBase
         return Ok(result);
     }
     
+    [HttpGet("user/posts")]
+    public async Task<IActionResult> GetUserPosts([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    {
+        var userId = HttpContext.GetUserId();  // Custom helper to get the userId from the JWT token
+        if (userId == null)
+        {
+            return Unauthorized(new { message = "User not authenticated." });
+        }
+        
+        var result = await postService.GetPostsByUserAsync(userId.Value, page, pageSize);
+
+        if (!result.Success)
+            return BadRequest(new { message = result.Message });
+
+        return Ok(result);
+    }
+    
     [Authorize]
     [HttpPost("posts")]
     public async Task<IActionResult> CreatePost([FromBody] CreatePostDto createPostDto)

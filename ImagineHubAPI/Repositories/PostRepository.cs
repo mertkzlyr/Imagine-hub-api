@@ -98,6 +98,39 @@ public class PostRepository(DataContext context) : IPostRepository
         };
     }
 
+    public async Task<ResultList<Post>> GetPostsByUserAsync(int userId, int page, int pageSize)
+    {
+        var query = context.Posts
+            .Where(p => p.UserId == userId)
+            .Include(p => p.User)
+            .Include(p => p.Likes)
+            .OrderByDescending(p => p.CreatedAt);
+
+        var totalPosts = await query.CountAsync();
+        var totalPages = (int)Math.Ceiling(totalPosts / (double)pageSize);
+
+        var posts = await query
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return new ResultList<Post>
+        {
+            Success = true,
+            Message = "User's posts retrieved successfully.",
+            Data = posts,
+            Pagination = new PaginationInformation
+            {
+                From = ((page - 1) * pageSize) + 1,
+                To = ((page - 1) * pageSize) + posts.Count,
+                Total = totalPosts,
+                CurrentPage = page,
+                PageSize = pageSize,
+                TotalPages = totalPages
+            }
+        };
+    }
+
     public async Task<Result> LikePostAsync(int userId, Guid postId)
     {
         var existingLike = await context.PostLikes
