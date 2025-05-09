@@ -78,6 +78,9 @@ public class PostService(IPostRepository postRepository) : IPostService
         {
             Id = postResult.Data.Id,
             UserId = postResult.Data.UserId,
+            Username = postResult.Data.User.Username,
+            Name = postResult.Data.User.Name,
+            Surname = postResult.Data.User.Surname,
             Description = postResult.Data.Description,
             ImageUrl = postResult.Data.ImageUrl,
             CreatedAt = postResult.Data.CreatedAt
