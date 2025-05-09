@@ -99,4 +99,9 @@ public class PostService(IPostRepository postRepository) : IPostService
     {
         return await postRepository.LikePostAsync(userId, postId);
     }
+
+    public async Task<Result> UnlikePostAsync(int userId, Guid postId)
+    {
+        return await postRepository.UnlikePostAsync(userId, postId);
+    }
 }

@@ -58,4 +58,20 @@ public class PostController(IPostService postService) : ControllerBase
 
         return Ok(result);
     }
+    
+    [HttpDelete("posts/{postId}/like")]
+    [Authorize]
+    public async Task<IActionResult> UnlikePost(Guid postId)
+    {
+        var userId = HttpContext.GetUserId();
+        if (userId == null)
+            return Unauthorized();
+
+        var result = await postService.UnlikePostAsync(userId.Value, postId);
+
+        if (!result.Success)
+            return BadRequest(new { message = result.Message });
+
+        return Ok(result);
+    }
 }

@@ -7,4 +7,5 @@ public interface IPostRepository
     Task<Result<Post>> AddAsync(Post post);
     Task<Result<Post>> GetByIdAsync(Guid id);
     Task<Result> LikePostAsync(int userId, Guid postId);
+    Task<Result> UnlikePostAsync(int userId, Guid postId);
 }
