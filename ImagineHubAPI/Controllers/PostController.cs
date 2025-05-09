@@ -10,6 +10,17 @@ namespace ImagineHubAPI.Controllers;
 [Route("api/[controller]")]
 public class PostController(IPostService postService) : ControllerBase
 {
+    [HttpGet("posts")]
+    public async Task<IActionResult> GetAllPosts([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    {
+        var result = await postService.GetAllPostsAsync(page, pageSize);
+
+        if (!result.Success)
+            return BadRequest(new { message = result.Message });
+
+        return Ok(result);
+    }
+    
     [Authorize]
     [HttpPost("posts")]
     public async Task<IActionResult> CreatePost([FromBody] CreatePostDto createPostDto)

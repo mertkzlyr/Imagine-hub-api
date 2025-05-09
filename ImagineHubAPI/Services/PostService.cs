@@ -95,6 +95,32 @@ public class PostService(IPostRepository postRepository) : IPostService
         };
     }
 
+    public async Task<ResultList<PostDto>> GetAllPostsAsync(int page, int pageSize)
+    {
+        var result = await postRepository.GetAllPostsAsync(page, pageSize);
+
+        var postDtos = result.Data.Select(p => new PostDto
+        {
+            Id = p.Id,
+            UserId = p.UserId,
+            Description = p.Description,
+            ImageUrl = p.ImageUrl,
+            CreatedAt = p.CreatedAt,
+            Username = p.User.Username,
+            Name = p.User.Name,
+            Surname = p.User.Surname,
+            LikeCount = p.Likes.Count
+        }).ToList();
+
+        return new ResultList<PostDto>
+        {
+            Success = true,
+            Message = result.Message,
+            Data = postDtos,
+            Pagination = result.Pagination
+        };
+    }
+
     public async Task<Result> LikePostAsync(int userId, Guid postId)
     {
         return await postRepository.LikePostAsync(userId, postId);
