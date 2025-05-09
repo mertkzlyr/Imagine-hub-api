@@ -21,4 +21,5 @@ public class User
     public ICollection<UserFollows> Followers { get; set; } = new List<UserFollows>();
     public ICollection<UserFollows> Following { get; set; } = new List<UserFollows>();
     public ICollection<Post> Posts { get; set; } = new List<Post>();
+    public ICollection<PostLike> LikedPosts { get; set; } = new List<PostLike>();
 }

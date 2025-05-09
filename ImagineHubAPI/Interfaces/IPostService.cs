@@ -7,4 +7,5 @@ public interface IPostService
 {
     Task<Result<PostDto>> CreatePostAsync(int userId, CreatePostDto createPostDto);
     Task<Result<PostDto>> GetPostByIdAsync(Guid id);
+    Task<Result> LikePostAsync(int userId, Guid postId);
 }

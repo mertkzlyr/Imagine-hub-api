@@ -36,7 +36,8 @@ public class PostRepository(DataContext context) : IPostRepository
         try
         {
             var post = await context.Posts
-                .Include(p => p.User) // Include User to get details of the user who posted
+                .Include(p => p.User)
+                .Include(p => p.Likes)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
             if (post == null)
@@ -65,5 +66,35 @@ public class PostRepository(DataContext context) : IPostRepository
                 Data = null
             };
         }
+    }
+
+    public async Task<Result> LikePostAsync(int userId, Guid postId)
+    {
+        var existingLike = await context.PostLikes
+            .FirstOrDefaultAsync(l => l.UserId == userId && l.PostId == postId);
+        
+        if (existingLike != null)
+        {
+            return new Result
+            {
+                Success = false,
+                Message = "Post already liked."
+            };
+        }
+        
+        var like = new PostLike
+        {
+            UserId = userId,
+            PostId = postId
+        };
+        
+        context.PostLikes.Add(like);
+        await context.SaveChangesAsync();
+
+        return new Result
+        {
+            Success = true,
+            Message = "Post liked successfully."
+        };
     }
 }

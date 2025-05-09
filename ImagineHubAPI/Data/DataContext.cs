@@ -9,6 +9,7 @@ public class DataContext(DbContextOptions<DataContext> options) : DbContext(opti
     public DbSet<Admin> Admins { get; set; }
     public DbSet<UserFollows> UserFollows { get; set; }
     public DbSet<Post> Posts { get; set; }
+    public DbSet<PostLike> PostLikes { get; set; }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -26,5 +27,18 @@ public class DataContext(DbContextOptions<DataContext> options) : DbContext(opti
             .WithMany(u => u.Followers)
             .HasForeignKey(uf => uf.FolloweeId)
             .OnDelete(DeleteBehavior.Restrict);
+        
+        modelBuilder.Entity<PostLike>()
+            .HasKey(pl => new { pl.UserId, pl.PostId });
+
+        modelBuilder.Entity<PostLike>()
+            .HasOne(pl => pl.User)
+            .WithMany(u => u.LikedPosts)
+            .HasForeignKey(pl => pl.UserId);
+
+        modelBuilder.Entity<PostLike>()
+            .HasOne(pl => pl.Post)
+            .WithMany(p => p.Likes)
+            .HasForeignKey(pl => pl.PostId);
     } 
 }

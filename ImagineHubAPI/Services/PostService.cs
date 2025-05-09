@@ -83,7 +83,8 @@ public class PostService(IPostRepository postRepository) : IPostService
             Surname = postResult.Data.User.Surname,
             Description = postResult.Data.Description,
             ImageUrl = postResult.Data.ImageUrl,
-            CreatedAt = postResult.Data.CreatedAt
+            CreatedAt = postResult.Data.CreatedAt,
+            LikeCount = postResult.Data.Likes.Count
         };
 
         return new Result<PostDto>
@@ -92,5 +93,10 @@ public class PostService(IPostRepository postRepository) : IPostService
             Message = postResult.Message,
             Data = postDto
         };
+    }
+
+    public async Task<Result> LikePostAsync(int userId, Guid postId)
+    {
+        return await postRepository.LikePostAsync(userId, postId);
     }
 }

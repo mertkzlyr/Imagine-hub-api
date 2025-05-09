@@ -43,4 +43,19 @@ public class PostController(IPostService postService) : ControllerBase
 
         return Ok(result);  // Return the post in the result
     }
+    
+    [HttpPost("posts/{postId}/like")]
+    [Authorize]
+    public async Task<IActionResult> LikePost(Guid postId)
+    {
+        var userId = HttpContext.GetUserId();
+        if (userId == null)
+            return Unauthorized(new { message = "User not authenticated." });
+
+        var result = await postService.LikePostAsync(userId.Value, postId);
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
 }
