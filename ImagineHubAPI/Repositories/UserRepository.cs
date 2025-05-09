@@ -14,12 +14,14 @@ public class UserRepository(DataContext context) : IUserRepository
             .ThenInclude(uf => uf.Follower)
             .Include(u => u.Following)
             .ThenInclude(uf => uf.Followee)
+            .Include(u => u.Posts)
             .FirstOrDefaultAsync(u => u.Id == id);
+
         if (user == null)
         {
             throw new KeyNotFoundException("User not found.");
         }
-        
+
         return user;
     }
 

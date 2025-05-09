@@ -32,7 +32,8 @@ public class UserService(IUserRepository userRepository, ITokenService tokenServ
             CreatedAt = user.CreatedAt,
             ProfilePicture = user.ProfilePicture,
             Followers = user.Followers.Count,
-            Following = user.Following.Count
+            Following = user.Following.Count,
+            Posts = user.Posts.Count
         };
 
         return new Result<UserDto>
