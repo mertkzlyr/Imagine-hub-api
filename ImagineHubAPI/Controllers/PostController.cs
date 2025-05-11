@@ -1,3 +1,4 @@
+using ImagineHubAPI.DTOs.CommentDTOs;
 using ImagineHubAPI.DTOs.PostDTOs;
 using ImagineHubAPI.Extensions;
 using ImagineHubAPI.Interfaces;
@@ -8,7 +9,7 @@ namespace ImagineHubAPI.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class PostController(IPostService postService) : ControllerBase
+public class PostController(IPostService postService, ICommentService commentService) : ControllerBase
 {
     [HttpGet("posts")]
     public async Task<IActionResult> GetAllPosts([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
@@ -118,6 +119,22 @@ public class PostController(IPostService postService) : ControllerBase
             return Unauthorized(new { message = "User not authenticated." });
 
         var result = await postService.UpdatePostDescriptionAsync(userId.Value, postId, description);
+
+        if (!result.Success)
+            return BadRequest(new { message = result.Message });
+
+        return Ok(result);
+    }
+    
+    [HttpPost("posts/comments")]
+    [Authorize]
+    public async Task<IActionResult> CreateComment([FromBody] CreateCommentDto dto)
+    {
+        var userId = HttpContext.GetUserId();
+        if (userId == null)
+            return Unauthorized(new { message = "User not authenticated." });
+
+        var result = await commentService.CreateCommentAsync(dto, userId.Value);
 
         if (!result.Success)
             return BadRequest(new { message = result.Message });
