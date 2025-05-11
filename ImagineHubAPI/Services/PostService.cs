@@ -1,3 +1,4 @@
+using ImagineHubAPI.DTOs.CommentDTOs;
 using ImagineHubAPI.DTOs.PostDTOs;
 using ImagineHubAPI.Interfaces;
 using ImagineHubAPI.Models;
@@ -60,13 +61,13 @@ public class PostService(IPostRepository postRepository) : IPostService
         };
     }
 
-    public async Task<Result<PostDto>> GetPostByIdAsync(Guid id)
+    public async Task<Result<PostByIdDto>> GetPostByIdAsync(Guid id)
     {
         var postResult = await postRepository.GetByIdAsync(id);
 
         if (!postResult.Success)
         {
-            return new Result<PostDto>
+            return new Result<PostByIdDto>
             {
                 Success = false,
                 Message = postResult.Message,
@@ -74,7 +75,7 @@ public class PostService(IPostRepository postRepository) : IPostService
             };
         }
 
-        var postDto = new PostDto
+        var postDto = new PostByIdDto
         {
             Id = postResult.Data.Id,
             UserId = postResult.Data.UserId,
@@ -84,10 +85,19 @@ public class PostService(IPostRepository postRepository) : IPostService
             Description = postResult.Data.Description,
             ImageUrl = postResult.Data.ImageUrl,
             CreatedAt = postResult.Data.CreatedAt,
-            LikeCount = postResult.Data.Likes.Count
+            LikeCount = postResult.Data.Likes.Count,
+            CommentCount = postResult.Data.Comments.Count,
+            Comments = postResult.Data.Comments.Select(c => new CommentDto
+            {
+                Id = c.Id,
+                UserId = c.UserId,
+                Username = c.User.Username,
+                Comment = c.Comment,
+                CreatedAt = c.CreatedAt
+            }).ToList()
         };
 
-        return new Result<PostDto>
+        return new Result<PostByIdDto>
         {
             Success = true,
             Message = postResult.Message,
@@ -109,7 +119,8 @@ public class PostService(IPostRepository postRepository) : IPostService
             Username = p.User.Username,
             Name = p.User.Name,
             Surname = p.User.Surname,
-            LikeCount = p.Likes.Count
+            LikeCount = p.Likes.Count,
+            CommentCount = p.Comments.Count
         }).ToList();
 
         return new ResultList<PostDto>
@@ -135,7 +146,8 @@ public class PostService(IPostRepository postRepository) : IPostService
             Username = p.User.Username,
             Name = p.User.Name,
             Surname = p.User.Surname,
-            LikeCount = p.Likes.Count
+            LikeCount = p.Likes.Count,
+            CommentCount = p.Comments.Count
         }).ToList();
 
         return new ResultList<PostDto>

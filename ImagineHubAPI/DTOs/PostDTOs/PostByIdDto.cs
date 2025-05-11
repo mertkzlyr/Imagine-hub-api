@@ -1,6 +1,8 @@
+using ImagineHubAPI.DTOs.CommentDTOs;
+
 namespace ImagineHubAPI.DTOs.PostDTOs;
 
-public class PostDto
+public class PostByIdDto
 {
     public Guid Id { get; set; }
     public int UserId { get; set; }
@@ -11,5 +13,6 @@ public class PostDto
     public string ImageUrl { get; set; } = null!;
     public int LikeCount { get; set; }
     public int CommentCount { get; set; }
+    public List<CommentDto> Comments { get; set; } = new List<CommentDto>();
     public DateTime CreatedAt { get; set; }
 }

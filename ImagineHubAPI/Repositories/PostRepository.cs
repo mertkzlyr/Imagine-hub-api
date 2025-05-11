@@ -38,6 +38,7 @@ public class PostRepository(DataContext context) : IPostRepository
             var post = await context.Posts
                 .Include(p => p.User)
                 .Include(p => p.Likes)
+                .Include(p => p.Comments)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
             if (post == null)
@@ -76,6 +77,7 @@ public class PostRepository(DataContext context) : IPostRepository
         var posts = await context.Posts
             .Include(p => p.User)
             .Include(p => p.Likes)
+            .Include(p => p.Comments)
             .OrderByDescending(p => p.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
@@ -104,6 +106,7 @@ public class PostRepository(DataContext context) : IPostRepository
             .Where(p => p.UserId == userId)
             .Include(p => p.User)
             .Include(p => p.Likes)
+            .Include(p => p.Comments)
             .OrderByDescending(p => p.CreatedAt);
 
         var totalPosts = await query.CountAsync();
