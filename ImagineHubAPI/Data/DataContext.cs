@@ -10,6 +10,7 @@ public class DataContext(DbContextOptions<DataContext> options) : DbContext(opti
     public DbSet<UserFollows> UserFollows { get; set; }
     public DbSet<Post> Posts { get; set; }
     public DbSet<PostLike> PostLikes { get; set; }
+    public DbSet<PostComment> PostComments { get; set; }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -40,5 +41,17 @@ public class DataContext(DbContextOptions<DataContext> options) : DbContext(opti
             .HasOne(pl => pl.Post)
             .WithMany(p => p.Likes)
             .HasForeignKey(pl => pl.PostId);
+        
+        modelBuilder.Entity<PostComment>()
+            .HasOne(pc => pc.User)
+            .WithMany()
+            .HasForeignKey(pc => pc.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PostComment>()
+            .HasOne(pc => pc.Post)
+            .WithMany(p => p.Comments)
+            .HasForeignKey(pc => pc.PostId)
+            .OnDelete(DeleteBehavior.Cascade);
     } 
 }
