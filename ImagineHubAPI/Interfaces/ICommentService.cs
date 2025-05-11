@@ -7,4 +7,5 @@ public interface ICommentService
 {
     Task<Result<CommentDto>> CreateCommentAsync(CreateCommentDto commentDto, int userId);
     Task<Result> DeleteCommentAsync(Guid commentId, int userId);
+    Task<Result> UpdateCommentAsync(Guid commentId, int userId, string comment);
 }

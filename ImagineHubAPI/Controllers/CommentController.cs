@@ -41,4 +41,20 @@ public class CommentController(ICommentService commentService) : ControllerBase
 
         return Ok(result);
     }
+
+    [HttpPut]
+    [Authorize]
+    public async Task<IActionResult> UpdateComment([FromBody] UpdateCommentDto request)
+    {
+        var userId = HttpContext.GetUserId();
+        if (userId == null)
+            return Unauthorized(new { message = "User not authenticated." });
+        
+        var result = await commentService.UpdateCommentAsync(request.CommentId, userId.Value, request.Comment);
+
+        if (!result.Success)
+            return BadRequest(new { message = result.Message });
+
+        return Ok(result);
+    }
 }

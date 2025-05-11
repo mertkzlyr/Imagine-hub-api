@@ -39,4 +39,22 @@ public class CommentRepository(DataContext context) : ICommentRepository
 
         return comment;
     }
+
+    public async Task<PostComment> UpdateAsync(Guid commentId, int userId, string comment)
+    {
+        
+        var existingComment = await context.PostComments
+            .FirstOrDefaultAsync(c => c.Id == commentId && c.UserId == userId);
+
+        if (existingComment != null)
+        {
+            existingComment.Comment = comment;
+            existingComment.UpdatedAt = DateTime.UtcNow;
+
+            context.PostComments.Update(existingComment);
+            await context.SaveChangesAsync();
+        }
+
+        return existingComment;
+    }
 }

@@ -66,4 +66,34 @@ public class CommentService(ICommentRepository commentRepository) : ICommentServ
             };
         }
     }
+
+    public async Task<Result> UpdateCommentAsync(Guid commentId, int userId, string comment)
+    {
+        try
+        {
+            var updatedComment = await commentRepository.UpdateAsync(commentId, userId, comment);
+            if (updatedComment == null)
+            {
+                return new Result
+                {
+                    Success = false,
+                    Message = "Comment not found or you do not have permission to update it."
+                };
+            }
+
+            return new Result
+            {
+                Success = true,
+                Message = "Comment updated successfully."
+            };
+        }
+        catch (Exception ex)
+        {
+            return new Result
+            {
+                Success = false,
+                Message = $"Failed to update comment: {ex.Message}",
+            };
+        }
+    }
 }
