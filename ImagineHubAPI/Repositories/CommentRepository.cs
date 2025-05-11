@@ -2,6 +2,7 @@ using ImagineHubAPI.Data;
 using ImagineHubAPI.DTOs.CommentDTOs;
 using ImagineHubAPI.Interfaces;
 using ImagineHubAPI.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace ImagineHubAPI.Repositories;
 
@@ -21,6 +22,20 @@ public class CommentRepository(DataContext context) : ICommentRepository
 
         await context.PostComments.AddAsync(comment);
         await context.SaveChangesAsync();
+
+        return comment;
+    }
+
+    public async Task<PostComment> DeleteAsync(Guid commentId, int userId)
+    {
+        var comment = await context.PostComments
+            .FirstOrDefaultAsync(c => c.Id == commentId && c.UserId == userId);
+
+        if (comment != null)
+        {
+            context.PostComments.Remove(comment);
+            await context.SaveChangesAsync();
+        }
 
         return comment;
     }

@@ -125,20 +125,4 @@ public class PostController(IPostService postService, ICommentService commentSer
 
         return Ok(result);
     }
-    
-    [HttpPost("posts/comments")]
-    [Authorize]
-    public async Task<IActionResult> CreateComment([FromBody] CreateCommentDto dto)
-    {
-        var userId = HttpContext.GetUserId();
-        if (userId == null)
-            return Unauthorized(new { message = "User not authenticated." });
-
-        var result = await commentService.CreateCommentAsync(dto, userId.Value);
-
-        if (!result.Success)
-            return BadRequest(new { message = result.Message });
-
-        return Ok(result);
-    }
 }

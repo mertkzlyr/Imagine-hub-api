@@ -36,4 +36,34 @@ public class CommentService(ICommentRepository commentRepository) : ICommentServ
             };
         }
     }
+
+    public async Task<Result> DeleteCommentAsync(Guid commentId, int userId)
+    {
+        try
+        {
+            var deletedComment = await commentRepository.DeleteAsync(commentId, userId);
+            if (deletedComment == null)
+            {
+                return new Result
+                {
+                    Success = false,
+                    Message = "Comment not found or you do not have permission to delete it."
+                };
+            }
+
+            return new Result
+            {
+                Success = true,
+                Message = "Comment deleted successfully."
+            };
+        }
+        catch (Exception ex)
+        {
+            return new Result
+            {
+                Success = false,
+                Message = $"Failed to delete comment: {ex.Message}",
+            };
+        }
+    }
 }
