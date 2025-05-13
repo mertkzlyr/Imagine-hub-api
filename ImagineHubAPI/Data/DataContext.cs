@@ -43,15 +43,22 @@ public class DataContext(DbContextOptions<DataContext> options) : DbContext(opti
             .HasForeignKey(pl => pl.PostId);
         
         modelBuilder.Entity<PostComment>()
-            .HasOne(pc => pc.User)
-            .WithMany()
-            .HasForeignKey(pc => pc.UserId)
+            .HasOne(c => c.ParentComment)
+            .WithMany(c => c.Replies)
+            .HasForeignKey(c => c.ParentId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<PostComment>()
-            .HasOne(pc => pc.Post)
-            .WithMany(p => p.Comments)
-            .HasForeignKey(pc => pc.PostId)
-            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<CommentLike>()
+            .HasKey(cl => new { cl.UserId, cl.CommentId });
+
+        modelBuilder.Entity<CommentLike>()
+            .HasOne(cl => cl.User)
+            .WithMany(u => u.LikedComments)
+            .HasForeignKey(cl => cl.UserId);
+
+        modelBuilder.Entity<CommentLike>()
+            .HasOne(cl => cl.Comment)
+            .WithMany(c => c.Likes)
+            .HasForeignKey(cl => cl.CommentId);
     } 
 }

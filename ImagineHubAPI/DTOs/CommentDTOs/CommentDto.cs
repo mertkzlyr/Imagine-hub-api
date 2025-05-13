@@ -7,5 +7,8 @@ public class CommentDto
     public int UserId { get; set; }
     public string Username { get; set; }
     public string Comment { get; set; } = string.Empty;
+    public Guid? ParentId { get; set; }
+    public int LikeCount { get; set; }
+    public List<CommentDto> Replies { get; set; } = new();
     public DateTime CreatedAt { get; set; }
 }
