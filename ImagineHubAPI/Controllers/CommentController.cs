@@ -57,4 +57,26 @@ public class CommentController(ICommentService commentService) : ControllerBase
 
         return Ok(result);
     }
+    
+    [HttpPost("{commentId}/like")]
+    [Authorize]
+    public async Task<IActionResult> LikeComment(Guid commentId)
+    {
+        var userId = HttpContext.GetUserId();
+        if (userId == null) return Unauthorized();
+
+        var result = await commentService.LikeCommentAsync(commentId, userId.Value);
+        return result.Success ? Ok(result) : BadRequest(result);
+    }
+
+    [HttpDelete("{commentId}/like")]
+    [Authorize]
+    public async Task<IActionResult> UnlikeComment(Guid commentId)
+    {
+        var userId = HttpContext.GetUserId();
+        if (userId == null) return Unauthorized();
+
+        var result = await commentService.UnlikeCommentAsync(commentId, userId.Value);
+        return result.Success ? Ok(result) : BadRequest(result);
+    }
 }

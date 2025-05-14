@@ -87,14 +87,31 @@ public class PostService(IPostRepository postRepository) : IPostService
             CreatedAt = postResult.Data.CreatedAt,
             LikeCount = postResult.Data.Likes.Count,
             CommentCount = postResult.Data.Comments.Count,
-            Comments = postResult.Data.Comments.Select(c => new CommentDto
-            {
-                Id = c.Id,
-                UserId = c.UserId,
-                Username = c.User.Username,
-                Comment = c.Comment,
-                CreatedAt = c.CreatedAt
-            }).ToList()
+            Comments = postResult.Data.Comments
+                .Where(c => c.ParentId == null)
+                .Select(c => new CommentDto
+                {
+                    Id = c.Id,
+                    UserId = c.UserId,
+                    Username = c.User.Username,
+                    Comment = c.Comment,
+                    ParentId = c.ParentId,
+                    LikeCount = c.Likes.Count,
+                    CreatedAt = c.CreatedAt,
+                    Replies = postResult.Data.Comments
+                        .Where(r => r.ParentId == c.Id)
+                        .Select(r => new CommentDto
+                        {
+                            Id = r.Id,
+                            UserId = r.UserId,
+                            Username = r.User.Username,
+                            Comment = r.Comment,
+                            ParentId = r.ParentId,
+                            LikeCount = r.Likes.Count,
+                            CreatedAt = r.CreatedAt,
+                            Replies = []
+                        }).ToList()
+                }).ToList()
         };
 
         return new Result<PostByIdDto>

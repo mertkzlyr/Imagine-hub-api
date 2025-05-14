@@ -39,6 +39,9 @@ public class PostRepository(DataContext context) : IPostRepository
                 .Include(p => p.User)
                 .Include(p => p.Likes)
                 .Include(p => p.Comments)
+                .ThenInclude(c => c.User)
+                .Include(p => p.Comments)
+                .ThenInclude(c => c.Likes)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
             if (post == null)

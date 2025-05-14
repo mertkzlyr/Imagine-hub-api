@@ -96,4 +96,24 @@ public class CommentService(ICommentRepository commentRepository) : ICommentServ
             };
         }
     }
+
+    public async Task<Result> LikeCommentAsync(Guid commentId, int userId)
+    {
+        var success = await commentRepository.LikeCommentAsync(userId, commentId);
+        return new Result
+        {
+            Success = success,
+            Message = success ? "Comment liked." : "Already liked."
+        };
+    }
+
+    public async Task<Result> UnlikeCommentAsync(Guid commentId, int userId)
+    {
+        var success = await commentRepository.UnlikeCommentAsync(userId, commentId);
+        return new Result
+        {
+            Success = success,
+            Message = success ? "Comment unliked." : "You haven't liked this comment."
+        };
+    }
 }
