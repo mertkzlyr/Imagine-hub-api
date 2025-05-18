@@ -28,6 +28,7 @@ builder.Services.AddScoped<IAdminRepository, AdminRepository>();
 builder.Services.AddScoped<IFollowRepository, FollowRepository>();
 builder.Services.AddScoped<IPostRepository, PostRepository>();
 builder.Services.AddScoped<ICommentRepository, CommentRepository>();
+builder.Services.AddScoped<IImageRepository, ImageRepository>();
 
 // Register services
 builder.Services.AddScoped<IUserService, UserService>();
@@ -37,6 +38,7 @@ builder.Services.AddScoped<PasswordHasherService>();
 builder.Services.AddScoped<IFollowService, FollowService>();
 builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
+builder.Services.AddHttpClient<IImageService, ImageService>();
 
 var app = builder.Build();
 
