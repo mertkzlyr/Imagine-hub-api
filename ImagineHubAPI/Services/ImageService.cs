@@ -40,4 +40,42 @@ public class ImageService(IImageRepository imageRepository, HttpClient httpClien
         return new Result<string> { Success = true, Data = image.ImageUrl };
         
     }
+
+    public async Task<Result<Image>> GetImageByIdAsync(Guid id, int userId)
+    {
+        var image = await imageRepository.GetByIdAsync(id, userId);
+
+        if (image == null)
+            return new Result<Image> { Success = false, Message = "Image not found" };
+
+        return new Result<Image> { Success = true, Data = image };
+    }
+
+    public async Task<ResultList<Image>> GetImagesByUserIdAsync(int userId, int page, int pageSize)
+    {
+        // Fetch paged image list
+        var images = await imageRepository.GetByUserIdAsync(userId, page, pageSize);
+
+        var totalPages = (int)Math.Ceiling(images.Count / (double)pageSize);
+        var from = ((page - 1) * pageSize) + 1;
+        var to = from + images.Count - 1;
+
+        var pagination = new PaginationInformation
+        {
+            From = from,
+            To = to,
+            Total = images.Count ,
+            CurrentPage = page,
+            PageSize = pageSize,
+            TotalPages = totalPages
+        };
+
+        return new ResultList<Image>
+        {
+            Success = images.Any(),
+            Data = images,
+            Message = images.Any() ? null : "No images found",
+            Pagination = pagination
+        };
+    }
 }
