@@ -17,6 +17,7 @@ public class User
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public string? ProfilePicture { get; set; }
+    public int GenerationToken { get; set; }
 
     public ICollection<UserFollows> Followers { get; set; } = new List<UserFollows>();
     public ICollection<UserFollows> Following { get; set; } = new List<UserFollows>();

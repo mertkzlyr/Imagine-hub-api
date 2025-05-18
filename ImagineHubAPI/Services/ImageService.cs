@@ -6,10 +6,15 @@ using ImagineHubAPI.Models;
 
 namespace ImagineHubAPI.Services;
 
-public class ImageService(IImageRepository imageRepository, HttpClient httpClient) : IImageService
+public class ImageService(IImageRepository imageRepository, IUserRepository userRepository, HttpClient httpClient) : IImageService
 {
     public async Task<Result<string>> GenerateAndSaveImageAsync(string prompt, int userId)
     {
+        // Check token availability
+        var user = await userRepository.RemoveToken(userId, 1);
+        if (user == null)
+            return new Result<string> { Success = false, Message = "Insufficient generation tokens." };
+
         var payload = new { prompt = prompt, size = "512x512" };
         var json = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
@@ -38,7 +43,6 @@ public class ImageService(IImageRepository imageRepository, HttpClient httpClien
         await imageRepository.SaveImageAsync(image);
 
         return new Result<string> { Success = true, Data = image.ImageUrl };
-        
     }
 
     public async Task<Result<Image>> GetImageByIdAsync(Guid id, int userId)

@@ -13,5 +13,6 @@ CREATE TABLE Users (
    Country NVARCHAR(100) NULL,
    CreatedAt DATETIME NOT NULL DEFAULT GETDATE(),
    UpdatedAt DATETIME NULL,
-   ProfilePicture NVARCHAR(MAX) NULL
+   ProfilePicture NVARCHAR(MAX) NULL,
+   GenerationToken INT NOT NULL DEFAULT 10
 );
