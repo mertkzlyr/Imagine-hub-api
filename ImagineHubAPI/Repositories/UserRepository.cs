@@ -65,6 +65,22 @@ public class UserRepository(DataContext context) : IUserRepository
         return user;
     }
 
+    public async Task<User?> GetByUsernameAsync(string username)
+    {
+        var user = await context.Users
+            .Include(u => u.Followers)
+            .ThenInclude(uf => uf.Follower)
+            .Include(u => u.Following)
+            .ThenInclude(uf => uf.Followee)
+            .Include(u => u.Posts)
+            .ThenInclude(up => up.Likes)
+            .Include(u => u.Posts)
+            .ThenInclude(up => up.Comments)
+            .FirstOrDefaultAsync(u => u.Username == username);
+
+        return user;
+    }
+
     public async Task<User?> RemoveToken(int userId, int token)
     {
         var user = await context.Users.FindAsync(userId);

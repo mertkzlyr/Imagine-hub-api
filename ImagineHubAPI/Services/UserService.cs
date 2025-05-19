@@ -1,4 +1,5 @@
 using ImagineHubAPI.DTOs.AuthDTOs;
+using ImagineHubAPI.DTOs.PostDTOs;
 using ImagineHubAPI.DTOs.UserDTOs;
 using ImagineHubAPI.Interfaces;
 using ImagineHubAPI.Models;
@@ -33,7 +34,20 @@ public class UserService(IUserRepository userRepository, ITokenService tokenServ
             ProfilePicture = user.ProfilePicture,
             Followers = user.Followers.Count,
             Following = user.Following.Count,
-            Posts = user.Posts.Count
+            PostCount = user.Posts.Count,
+            Posts = user.Posts.Select(p => new PostDto
+            {
+                Id = p.Id,
+                UserId = p.UserId,
+                Username = p.User.Username,
+                Name = p.User.Name,
+                Surname = p.User.Surname,
+                LikeCount = p.Likes.Count,
+                CommentCount = p.Comments.Count,
+                Description = p.Description,
+                ImageUrl = p.ImageUrl,
+                CreatedAt = p.CreatedAt
+            }).ToList()
         };
 
         return new Result<UserDto>
@@ -44,6 +58,55 @@ public class UserService(IUserRepository userRepository, ITokenService tokenServ
         };
     }
 
+    public async Task<Result<UserDto>> GetByUsernameAsync(string username)
+    {
+        var user = await userRepository.GetByUsernameAsync(username);
+        
+        if (user == null)
+        {
+            return new Result<UserDto>
+            {
+                Success = false,
+                Message = "User not found.",
+                Data = null
+            };
+        }
+
+        var userDto = new UserDto
+        {
+            Id = user.Id,
+            Username = user.Username,
+            Name = user.Name,
+            Surname = user.Surname,
+            City = user.City,
+            Country = user.Country,
+            CreatedAt = user.CreatedAt,
+            ProfilePicture = user.ProfilePicture,
+            Followers = user.Followers.Count,
+            Following = user.Following.Count,
+            PostCount = user.Posts.Count,
+            Posts = user.Posts.Select(p => new PostDto
+            {
+                Id = p.Id,
+                UserId = p.UserId,
+                Username = p.User.Username,
+                Name = p.User.Name,
+                Surname = p.User.Surname,
+                LikeCount = p.Likes.Count,
+                CommentCount = p.Comments.Count,
+                Description = p.Description,
+                ImageUrl = p.ImageUrl,
+                CreatedAt = p.CreatedAt
+            }).ToList()
+        };
+
+        return new Result<UserDto>
+        {
+            Success = true,
+            Message = "User retrieved successfully.",
+            Data = userDto
+        };
+    }
 
     public async Task<Result<LoginResponse>> AuthenticateAsync(LoginRequest request)
     {
@@ -77,6 +140,15 @@ public class UserService(IUserRepository userRepository, ITokenService tokenServ
                 Message = "Email is already in use."
             };
         }
+        
+        if (await userRepository.GetByUsernameAsync(registerDto.Username) != null)
+        {
+            return new Result
+            {
+                Success = false,
+                Message = "Username is already in use."
+            };
+        }
 
         var hashedPassword = hasher.HashPassword(registerDto.Password);
 
@@ -104,4 +176,52 @@ public class UserService(IUserRepository userRepository, ITokenService tokenServ
         };
     }
 
+    public async Task<Result<UserDto>> UpdateUserAsync(int userId, UpdateUserDto updateDto)
+    {
+        var user = await userRepository.GetByIdAsync(userId);
+        if (user == null)
+            return new Result<UserDto> { Success = false, Message = "User not found." };
+
+        // Update allowed fields
+        user.Name = updateDto.Name ?? user.Name;
+        user.Surname = updateDto.Surname ?? user.Surname;
+        user.MiddleName = updateDto.MiddleName ?? user.MiddleName;
+        user.City = updateDto.City ?? user.City;
+        user.State = updateDto.State ?? user.State;
+        user.Country = updateDto.Country ?? user.Country;
+        user.PhoneNumber = updateDto.PhoneNumber ?? user.PhoneNumber;
+        user.UpdatedAt = DateTime.UtcNow;
+
+        var updatedUser = await userRepository.UpdateAsync(user);
+
+        var userDto = new UserDto
+        {
+            Id = updatedUser.Id,
+            Username = updatedUser.Username,
+            Name = updatedUser.Name,
+            Surname = updatedUser.Surname,
+            City = updatedUser.City,
+            Country = updatedUser.Country,
+            CreatedAt = updatedUser.CreatedAt,
+            ProfilePicture = updatedUser.ProfilePicture,
+            Followers = updatedUser.Followers.Count,
+            Following = updatedUser.Following.Count,
+            PostCount = updatedUser.Posts.Count,
+            Posts = user.Posts.Select(p => new PostDto
+            {
+                Id = p.Id,
+                UserId = p.UserId,
+                Username = p.User.Username,
+                Name = p.User.Name,
+                Surname = p.User.Surname,
+                LikeCount = p.Likes.Count,
+                CommentCount = p.Comments.Count,
+                Description = p.Description,
+                ImageUrl = p.ImageUrl,
+                CreatedAt = p.CreatedAt
+            }).ToList()
+        };
+
+        return new Result<UserDto> { Success = true, Data = userDto, Message = "User updated successfully." };
+    }
 }

@@ -1,3 +1,6 @@
+using ImagineHubAPI.DTOs.PostDTOs;
+using ImagineHubAPI.Models;
+
 namespace ImagineHubAPI.DTOs.UserDTOs;
 
 public class UserDto
@@ -10,7 +13,8 @@ public class UserDto
     public string? Country { get; set; }
     public DateTime CreatedAt { get; set; }
     public string? ProfilePicture { get; set; }
-    public int Posts { get; set; }
+    public int PostCount { get; set; }
     public int Followers { get; set; }
     public int Following { get; set; }
+    public ICollection<PostDto> Posts { get; set; } = new List<PostDto>();
 }

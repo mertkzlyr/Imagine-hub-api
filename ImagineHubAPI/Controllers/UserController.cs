@@ -1,3 +1,5 @@
+using ImagineHubAPI.DTOs.UserDTOs;
+using ImagineHubAPI.Extensions;
 using ImagineHubAPI.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,18 +10,50 @@ namespace ImagineHubAPI.Controllers;
 [Route("api/[controller]")]
 public class UserController(IUserService userService) : ControllerBase
 {
-    [HttpGet("{id}")]
-    [Authorize(Policy = "UserPolicy")]
-    public async Task<IActionResult> GetUserById(int id)
+    [HttpGet]
+    [Authorize]
+    public async Task<IActionResult> GetUserById()
     {
         try
         {
-            var user = await userService.GetUserByIdAsync(id);
+            var userId = HttpContext.GetUserId();
+            if (userId == null)
+                return Unauthorized(new { Message = "User not authenticated." });
+            
+            var user = await userService.GetUserByIdAsync(userId.Value);
             return Ok(user);
         }
         catch (KeyNotFoundException)
         {
             return NotFound(new { Message = "User not found." });
         }
+    }
+    
+    [HttpGet("by-username/{username}")]
+    public async Task<IActionResult> GetUserByUsername(string username)
+    {
+        var user = await userService.GetByUsernameAsync(username);
+        if (user == null)
+        {
+            return NotFound(user);
+        }
+
+        return Ok(user);
+    }
+    
+    [HttpPut("update")]
+    [Authorize(Policy = "UserPolicy")]
+    public async Task<IActionResult> UpdateUser([FromBody] UpdateUserDto updateDto)
+    {
+        var userId = HttpContext.GetUserId();
+        if (userId == null)
+            return Unauthorized(new { Message = "User not authenticated." });
+
+        var result = await userService.UpdateUserAsync(userId.Value, updateDto);
+
+        if (!result.Success)
+            return BadRequest(new { Message = result.Message });
+
+        return Ok(result);
     }
 }
