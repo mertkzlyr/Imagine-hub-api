@@ -15,6 +15,9 @@ public class UserRepository(DataContext context) : IUserRepository
             .Include(u => u.Following)
             .ThenInclude(uf => uf.Followee)
             .Include(u => u.Posts)
+            .ThenInclude(up => up.Likes)
+            .Include(u => u.Posts)
+            .ThenInclude(up => up.Comments)
             .FirstOrDefaultAsync(u => u.Id == id);
 
         if (user == null)
