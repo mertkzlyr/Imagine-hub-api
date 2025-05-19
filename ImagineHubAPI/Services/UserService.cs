@@ -227,7 +227,22 @@ public class UserService(IUserRepository userRepository, ITokenService tokenServ
 
         return new Result<UserDto> { Success = true, Data = userDto, Message = "User updated successfully." };
     }
-    
+
+    public async Task<Result> UpdateProfilePictureAsync(int userId, IFormFile profilePicture)
+    {
+        var user = await userRepository.GetByIdAsync(userId);
+        if (user == null)
+            return new Result { Success = false, Message = "User not found." };
+
+        var newFileName = await SaveProfilePictureAsync(profilePicture, user.Username);
+        user.ProfilePicture = newFileName;
+        user.UpdatedAt = DateTime.UtcNow;
+
+        await userRepository.UpdateAsync(user);
+
+        return new Result { Success = true, Message = "Profile picture updated." };
+    }
+
     private async Task<string?> SaveProfilePictureAsync(IFormFile profilePicture, string username)
     {
         if (profilePicture == null) return null;

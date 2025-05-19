@@ -11,4 +11,5 @@ public interface IUserService
     Task<Result<LoginResponse>> AuthenticateAsync(LoginRequest request);
     Task<Result> RegisterUser(RegisterDto registerDto);
     Task<Result<UserDto>> UpdateUserAsync(int userId, UpdateUserDto updateDto);
+    Task<Result> UpdateProfilePictureAsync(int userId, IFormFile profilePicture);
 }
