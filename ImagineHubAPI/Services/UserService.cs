@@ -1,6 +1,7 @@
 using ImagineHubAPI.DTOs.AuthDTOs;
 using ImagineHubAPI.DTOs.PostDTOs;
 using ImagineHubAPI.DTOs.UserDTOs;
+using ImagineHubAPI.Helpers;
 using ImagineHubAPI.Interfaces;
 using ImagineHubAPI.Models;
 
@@ -152,7 +153,7 @@ public class UserService(IUserRepository userRepository, ITokenService tokenServ
 
         var hashedPassword = hasher.HashPassword(registerDto.Password);
 
-        var profilePicFileName = await SaveProfilePictureAsync(registerDto.ProfilePicture, registerDto.Username);
+        var profilePicFileName = await PictureSaver.SaveProfilePictureAsync(registerDto.ProfilePicture, registerDto.Username);
 
         var user = new User
         {
@@ -234,7 +235,7 @@ public class UserService(IUserRepository userRepository, ITokenService tokenServ
         if (user == null)
             return new Result { Success = false, Message = "User not found." };
 
-        var newFileName = await SaveProfilePictureAsync(profilePicture, user.Username);
+        var newFileName = await PictureSaver.SaveProfilePictureAsync(profilePicture, user.Username);
         user.ProfilePicture = newFileName;
         user.UpdatedAt = DateTime.UtcNow;
 
@@ -242,26 +243,4 @@ public class UserService(IUserRepository userRepository, ITokenService tokenServ
 
         return new Result { Success = true, Message = "Profile picture updated." };
     }
-
-    private async Task<string?> SaveProfilePictureAsync(IFormFile profilePicture, string username)
-    {
-        if (profilePicture == null) return null;
-
-        var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "profile_pics");
-
-        if (!Directory.Exists(uploadsFolder))
-            Directory.CreateDirectory(uploadsFolder);
-
-        var profilePicFileName = $"profilePic_{username}.webp";
-        var filePath = Path.Combine(uploadsFolder, profilePicFileName);
-
-        using (var stream = new FileStream(filePath, FileMode.Create))
-        {
-            await profilePicture.CopyToAsync(stream);
-        }
-
-        // Return the relative path or just the filename (your choice)
-        return profilePicFileName;
-    }
-
 }

@@ -41,7 +41,7 @@ public class PostController(IPostService postService, ICommentService commentSer
     
     [Authorize]
     [HttpPost("posts")]
-    public async Task<IActionResult> CreatePost([FromBody] CreatePostDto createPostDto)
+    public async Task<IActionResult> CreatePost([FromForm] CreatePostDto createPostDto)
     {
         var userId = HttpContext.GetUserId();  // Custom helper to get the userId from the JWT token
         if (userId == null)

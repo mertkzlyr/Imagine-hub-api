@@ -1,5 +1,6 @@
 using ImagineHubAPI.DTOs.CommentDTOs;
 using ImagineHubAPI.DTOs.PostDTOs;
+using ImagineHubAPI.Helpers;
 using ImagineHubAPI.Interfaces;
 using ImagineHubAPI.Models;
 
@@ -9,54 +10,56 @@ public class PostService(IPostRepository postRepository) : IPostService
 {
     public async Task<Result<PostDto>> CreatePostAsync(int userId, CreatePostDto createPostDto)
     {
-        // Validate incoming data
         if (string.IsNullOrWhiteSpace(createPostDto.Description))
         {
             return new Result<PostDto>
             {
                 Success = false,
-                Message = "Description is required.",
-                Data = null
+                Message = "Description is required."
             };
         }
 
-        // Create the post entity
+        var postId = Guid.NewGuid();
+        string? imageFileName = null;
+
+        if (createPostDto.Picture != null)
+        {
+            imageFileName = await PictureSaver.SavePostPicture(createPostDto.Picture, postId);
+        }
+
         var post = new Post
         {
+            Id = postId,
             UserId = userId,
             Description = createPostDto.Description,
-            ImageUrl = createPostDto.ImageUrl,
+            ImageUrl = imageFileName,
             CreatedAt = DateTime.UtcNow
         };
 
-        // Call the repository to add the post
         var postResult = await postRepository.AddAsync(post);
 
-        // If repository failed to add post, return the failure result
         if (!postResult.Success)
         {
             return new Result<PostDto>
             {
                 Success = false,
-                Message = postResult.Message,
-                Data = null
+                Message = postResult.Message
             };
         }
 
-        // Map to DTO for the response
         var postDto = new PostDto
         {
-            Id = postResult.Data.Id,
-            UserId = postResult.Data.UserId,
-            Description = postResult.Data.Description,
-            ImageUrl = postResult.Data.ImageUrl,
-            CreatedAt = postResult.Data.CreatedAt
+            Id = post.Id,
+            UserId = post.UserId,
+            Description = post.Description,
+            ImageUrl = post.ImageUrl,
+            CreatedAt = post.CreatedAt
         };
 
         return new Result<PostDto>
         {
             Success = true,
-            Message = postResult.Message,
+            Message = "Post created successfully.",
             Data = postDto
         };
     }
