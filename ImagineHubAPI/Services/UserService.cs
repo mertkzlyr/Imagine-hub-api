@@ -140,7 +140,7 @@ public class UserService(IUserRepository userRepository, ITokenService tokenServ
                 Message = "Email is already in use."
             };
         }
-        
+
         if (await userRepository.GetByUsernameAsync(registerDto.Username) != null)
         {
             return new Result
@@ -151,6 +151,8 @@ public class UserService(IUserRepository userRepository, ITokenService tokenServ
         }
 
         var hashedPassword = hasher.HashPassword(registerDto.Password);
+
+        var profilePicFileName = await SaveProfilePictureAsync(registerDto.ProfilePicture, registerDto.Username);
 
         var user = new User
         {
@@ -165,6 +167,7 @@ public class UserService(IUserRepository userRepository, ITokenService tokenServ
             State = registerDto.State,
             Country = registerDto.Country,
             CreatedAt = DateTime.UtcNow,
+            ProfilePicture = profilePicFileName
         };
 
         await userRepository.AddAsync(user);
@@ -224,4 +227,26 @@ public class UserService(IUserRepository userRepository, ITokenService tokenServ
 
         return new Result<UserDto> { Success = true, Data = userDto, Message = "User updated successfully." };
     }
+    
+    private async Task<string?> SaveProfilePictureAsync(IFormFile profilePicture, string username)
+    {
+        if (profilePicture == null) return null;
+
+        var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "profile_pics");
+
+        if (!Directory.Exists(uploadsFolder))
+            Directory.CreateDirectory(uploadsFolder);
+
+        var profilePicFileName = $"profilePic_{username}.webp";
+        var filePath = Path.Combine(uploadsFolder, profilePicFileName);
+
+        using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await profilePicture.CopyToAsync(stream);
+        }
+
+        // Return the relative path or just the filename (your choice)
+        return profilePicFileName;
+    }
+
 }
