@@ -74,4 +74,19 @@ public class UserController(IUserService userService) : ControllerBase
 
         return Ok(result);
     }
+    
+    [Authorize]
+    [HttpPut("update-password")]
+    public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordDto dto)
+    {
+        var userId = HttpContext.GetUserId();
+        if (userId == null)
+            return Unauthorized(new { message = "User not authenticated." });
+
+        var result = await userService.UpdatePasswordAsync(userId.Value, dto.CurrentPassword, dto.NewPassword);
+
+        return result.Success
+            ? Ok(new { message = result.Message })
+            : BadRequest(new { message = result.Message });
+    }
 }

@@ -243,4 +243,27 @@ public class UserService(IUserRepository userRepository, ITokenService tokenServ
 
         return new Result { Success = true, Message = "Profile picture updated." };
     }
+    
+    public async Task<Result> UpdatePasswordAsync(int userId, string currentPassword, string newPassword)
+    {
+        var user = await userRepository.GetByIdAsync(userId);
+        if (user == null)
+            return new Result { Success = false, Message = "User not found." };
+
+        if (!hasher.VerifyPassword(currentPassword, user.Password))
+            return new Result { Success = false, Message = "Current password is incorrect." };
+
+        user.Password = hasher.HashPassword(newPassword);
+
+        try
+        {
+            await userRepository.UpdateAsync(user);
+            return new Result { Success = true, Message = "Password updated successfully." };
+        }
+        catch (Exception ex)
+        {
+            return new Result { Success = false, Message = $"Failed to update password: {ex.Message}" };
+        }
+    }
+
 }
