@@ -89,4 +89,18 @@ public class UserController(IUserService userService) : ControllerBase
             ? Ok(new { message = result.Message })
             : BadRequest(new { message = result.Message });
     }
+    
+    [Authorize]
+    [HttpDelete("delete-account")]
+    public async Task<IActionResult> DeleteAccount([FromBody] string password)
+    {
+        var userId = HttpContext.GetUserId(); // gets user ID from token
+
+        var result = await userService.DeleteAccountAsync(userId.Value, password);
+        if (!result.Success)
+            return BadRequest(new { message = result.Message });
+
+        return Ok(new { message = result.Message });
+    }
+
 }

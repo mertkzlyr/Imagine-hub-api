@@ -13,4 +13,5 @@ public interface IUserService
     Task<Result<UserDto>> UpdateUserAsync(int userId, UpdateUserDto updateDto);
     Task<Result> UpdateProfilePictureAsync(int userId, IFormFile profilePicture);
     Task<Result> UpdatePasswordAsync(int userId, string currentPassword, string newPassword);
+    Task<Result> DeleteAccountAsync(int userId, string password);
 }

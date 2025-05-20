@@ -266,4 +266,23 @@ public class UserService(IUserRepository userRepository, ITokenService tokenServ
         }
     }
 
+    public async Task<Result> DeleteAccountAsync(int userId, string password)
+    {
+        var user = await userRepository.GetByIdAsync(userId);
+        if (user == null)
+            return new Result { Success = false, Message = "User not found." };
+
+        if (!hasher.VerifyPassword(password, user.Password))
+            return new Result { Success = false, Message = "Incorrect password." };
+
+        try
+        {
+            await userRepository.DeleteAsync(userId);
+            return new Result { Success = true, Message = "Account deleted successfully." };
+        }
+        catch (Exception ex)
+        {
+            return new Result { Success = false, Message = $"Error deleting account: {ex.Message}" };
+        }
+    }
 }
