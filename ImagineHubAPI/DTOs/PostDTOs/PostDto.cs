@@ -7,6 +7,7 @@ public class PostDto
     public string Username { get; set; }
     public string Name { get; set; }
     public string Surname { get; set; }
+    public string ProfilePicture { get; set; }
     public string? Description { get; set; } = null!;
     public string ImageUrl { get; set; } = null!;
     public int LikeCount { get; set; }

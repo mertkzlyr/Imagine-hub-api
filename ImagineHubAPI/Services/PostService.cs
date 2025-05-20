@@ -85,6 +85,7 @@ public class PostService(IPostRepository postRepository) : IPostService
             Username = postResult.Data.User.Username,
             Name = postResult.Data.User.Name,
             Surname = postResult.Data.User.Surname,
+            ProfilePicture = postResult.Data.User.ProfilePicture,
             Description = postResult.Data.Description,
             ImageUrl = postResult.Data.ImageUrl,
             CreatedAt = postResult.Data.CreatedAt,
@@ -97,6 +98,7 @@ public class PostService(IPostRepository postRepository) : IPostService
                     Id = c.Id,
                     UserId = c.UserId,
                     Username = c.User.Username,
+                    ProfilePicture = c.User.ProfilePicture,
                     Comment = c.Comment,
                     ParentId = c.ParentId,
                     LikeCount = c.Likes.Count,
@@ -108,6 +110,7 @@ public class PostService(IPostRepository postRepository) : IPostService
                             Id = r.Id,
                             UserId = r.UserId,
                             Username = r.User.Username,
+                            ProfilePicture = c.User.ProfilePicture,
                             Comment = r.Comment,
                             ParentId = r.ParentId,
                             LikeCount = r.Likes.Count,
@@ -139,6 +142,7 @@ public class PostService(IPostRepository postRepository) : IPostService
             Username = p.User.Username,
             Name = p.User.Name,
             Surname = p.User.Surname,
+            ProfilePicture = p.User.ProfilePicture,
             LikeCount = p.Likes.Count,
             CommentCount = p.Comments.Count
         }).ToList();

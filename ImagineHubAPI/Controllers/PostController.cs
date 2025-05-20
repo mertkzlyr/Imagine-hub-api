@@ -60,7 +60,6 @@ public class PostController(IPostService postService, ICommentService commentSer
     }
     
     [HttpGet("posts/{id}")]
-    [Authorize]
     public async Task<IActionResult> GetPostById(Guid id)
     {
         var result = await postService.GetPostByIdAsync(id);
