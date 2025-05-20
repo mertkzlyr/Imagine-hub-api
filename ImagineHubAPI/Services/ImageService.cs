@@ -82,4 +82,9 @@ public class ImageService(IImageRepository imageRepository, IUserRepository user
             Pagination = pagination
         };
     }
+
+    public async Task<User?> GetUserByIdAsync(int userId)
+    {
+        return await userRepository.GetByIdAsync(userId);
+    }
 }

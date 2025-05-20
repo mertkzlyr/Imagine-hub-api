@@ -55,4 +55,21 @@ public class ImageController(IImageService imageService) : ControllerBase
 
         return Ok(result);
     }
+    
+    [HttpGet("generation-tokens")]
+    [Authorize]
+    public async Task<IActionResult> GetGenerationTokens()
+    {
+        var userId = HttpContext.GetUserId();
+        if (userId == null)
+            return Unauthorized(new { message = "User not authenticated." });
+
+        var user = await imageService.GetUserByIdAsync(userId.Value); // You’ll add this method next.
+
+        if (user == null)
+            return NotFound(new { message = "User not found." });
+
+        return Ok(new { generationTokens = user.GenerationToken });
+    }
+
 }
