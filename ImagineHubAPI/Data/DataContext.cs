@@ -61,6 +61,7 @@ public class DataContext(DbContextOptions<DataContext> options) : DbContext(opti
         modelBuilder.Entity<CommentLike>()
             .HasOne(cl => cl.Comment)
             .WithMany(c => c.Likes)
-            .HasForeignKey(cl => cl.CommentId);
+            .HasForeignKey(cl => cl.CommentId)
+            .OnDelete(DeleteBehavior.Cascade);
     } 
 }

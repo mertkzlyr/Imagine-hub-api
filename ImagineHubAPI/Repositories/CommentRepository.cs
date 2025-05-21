@@ -34,11 +34,28 @@ public class CommentRepository(DataContext context) : ICommentRepository
 
         if (comment != null)
         {
+            // Remove likes
+            var likes = await context.CommentLikes
+                .Where(cl => cl.CommentId == commentId)
+                .ToListAsync();
+            context.CommentLikes.RemoveRange(likes);
+
+            // Remove replies
+            var replies = await context.PostComments
+                .Where(c => c.ParentId == commentId)
+                .ToListAsync();
+            context.PostComments.RemoveRange(replies);
+
+            // Save intermediate deletes
+            await context.SaveChangesAsync();
+
+            // Now remove the main comment
             context.PostComments.Remove(comment);
             await context.SaveChangesAsync();
         }
 
         return comment;
+
     }
 
     public async Task<PostComment> UpdateAsync(Guid commentId, int userId, string comment)

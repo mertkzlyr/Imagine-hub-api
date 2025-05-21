@@ -91,33 +91,7 @@ public class PostService(IPostRepository postRepository) : IPostService
             CreatedAt = postResult.Data.CreatedAt,
             LikeCount = postResult.Data.Likes.Count,
             CommentCount = postResult.Data.Comments.Count,
-            Comments = postResult.Data.Comments
-                .Where(c => c.ParentId == null)
-                .Select(c => new CommentDto
-                {
-                    Id = c.Id,
-                    UserId = c.UserId,
-                    Username = c.User.Username,
-                    ProfilePicture = c.User.ProfilePicture,
-                    Comment = c.Comment,
-                    ParentId = c.ParentId,
-                    LikeCount = c.Likes.Count,
-                    CreatedAt = c.CreatedAt,
-                    Replies = postResult.Data.Comments
-                        .Where(r => r.ParentId == c.Id)
-                        .Select(r => new CommentDto
-                        {
-                            Id = r.Id,
-                            UserId = r.UserId,
-                            Username = r.User.Username,
-                            ProfilePicture = c.User.ProfilePicture,
-                            Comment = r.Comment,
-                            ParentId = r.ParentId,
-                            LikeCount = r.Likes.Count,
-                            CreatedAt = r.CreatedAt,
-                            Replies = []
-                        }).ToList()
-                }).ToList()
+            Comments = BuildCommentTree(postResult.Data.Comments.ToList())
         };
 
         return new Result<PostByIdDto>
@@ -197,4 +171,25 @@ public class PostService(IPostRepository postRepository) : IPostService
     {
         return await postRepository.UpdatePostAsync(userId, postId, description);
     }
+    
+    private List<CommentDto> BuildCommentTree(List<PostComment> allComments, Guid? parentId = null)
+    {
+        return allComments
+            .Where(c => c.ParentId == parentId)
+            .OrderBy(c => c.CreatedAt)
+            .Select(c => new CommentDto
+            {
+                Id = c.Id,
+                UserId = c.UserId,
+                Username = c.User.Username,
+                ProfilePicture = c.User.ProfilePicture,
+                Comment = c.Comment,
+                ParentId = c.ParentId,
+                LikeCount = c.Likes.Count,
+                CreatedAt = c.CreatedAt,
+                Replies = BuildCommentTree(allComments, c.Id)  // Recursive call
+            })
+            .ToList();
+    }
+
 }
