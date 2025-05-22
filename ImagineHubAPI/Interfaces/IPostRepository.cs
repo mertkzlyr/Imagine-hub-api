@@ -11,4 +11,5 @@ public interface IPostRepository
     Task<Result> LikePostAsync(int userId, Guid postId);
     Task<Result> UnlikePostAsync(int userId, Guid postId);
     Task<Result> UpdatePostAsync(int userId, Guid postId, string description);
+    Task<Result> DeletePostAsync(int userId, Guid postId);
 }

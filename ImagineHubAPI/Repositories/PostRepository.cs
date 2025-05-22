@@ -223,4 +223,43 @@ public class PostRepository(DataContext context) : IPostRepository
             Message = "Post description updated successfully."
         };
     }
+
+    public async Task<Result> DeletePostAsync(int userId, Guid postId)
+    {
+        var post = await context.Posts
+            .Include(p => p.Comments)
+            .Include(p => p.Likes)
+            .FirstOrDefaultAsync(p => p.Id == postId);
+
+        if (post == null)
+        {
+            return new Result
+            {
+                Success = false,
+                Message = "Post not found."
+            };
+        }
+
+        if (post.UserId != userId)
+        {
+            return new Result
+            {
+                Success = false,
+                Message = "Unauthorized: You can only delete your own posts."
+            };
+        }
+
+        // Delete related likes and comments manually if cascade is not enabled
+        context.PostLikes.RemoveRange(post.Likes);
+        context.PostComments.RemoveRange(post.Comments);
+
+        context.Posts.Remove(post);
+        await context.SaveChangesAsync();
+
+        return new Result
+        {
+            Success = true,
+            Message = "Post deleted successfully."
+        };
+    }
 }

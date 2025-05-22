@@ -72,6 +72,23 @@ public class PostController(IPostService postService, ICommentService commentSer
         return Ok(result);  // Return the post in the result
     }
     
+    [Authorize]
+    [HttpDelete("posts/{postId}")]
+    public async Task<IActionResult> DeletePost(Guid postId)
+    {
+        var userId = HttpContext.GetUserId();
+        if (userId == null)
+            return Unauthorized(new { message = "User not authenticated." });
+
+        var result = await postService.DeletePostAsync(userId.Value, postId);
+
+        if (!result.Success)
+            return BadRequest(new { message = result.Message });
+
+        return Ok(result);
+    }
+
+    
     [HttpPost("posts/{postId}/like")]
     [Authorize]
     public async Task<IActionResult> LikePost(Guid postId)

@@ -171,7 +171,12 @@ public class PostService(IPostRepository postRepository) : IPostService
     {
         return await postRepository.UpdatePostAsync(userId, postId, description);
     }
-    
+
+    public async Task<Result> DeletePostAsync(int userId, Guid postId)
+    {
+        return await postRepository.DeletePostAsync(userId, postId);
+    }
+
     private List<CommentDto> BuildCommentTree(List<PostComment> allComments, Guid? parentId = null)
     {
         return allComments
