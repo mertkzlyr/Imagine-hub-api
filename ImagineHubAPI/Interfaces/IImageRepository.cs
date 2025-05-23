@@ -4,7 +4,7 @@ namespace ImagineHubAPI.Interfaces;
 
 public interface IImageRepository
 {
-    Task SaveImageAsync(Image image);
-    Task<Image> GetByIdAsync(Guid id, int userId);
-    Task<List<Image>> GetByUserIdAsync(int userId, int page, int pageSize);
+    Task SaveImageAsync(Models.Image image);
+    Task<Models.Image> GetByIdAsync(Guid id, int userId);
+    Task<List<Models.Image>> GetByUserIdAsync(int userId, int page, int pageSize);
 }

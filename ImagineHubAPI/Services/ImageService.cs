@@ -1,5 +1,9 @@
 using System.Text;
 using System.Text.Json;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Webp;
+using SixLabors.ImageSharp.Processing;
+using ImageSharp = SixLabors.ImageSharp.Image; // Alias to avoid conflict
 using ImagineHubAPI.DTOs.ImageDTOs;
 using ImagineHubAPI.Interfaces;
 using ImagineHubAPI.Models;
@@ -10,52 +14,71 @@ public class ImageService(IImageRepository imageRepository, IUserRepository user
 {
     public async Task<Result<string>> GenerateAndSaveImageAsync(string prompt, int userId)
     {
-        // Check token availability
+        // Deduct token
         var user = await userRepository.RemoveToken(userId, 1);
         if (user == null)
             return new Result<string> { Success = false, Message = "Insufficient generation tokens." };
 
+        // Send prompt to image generation API
         var payload = new { prompt = prompt, size = "512x512" };
         var json = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
         var response = await httpClient.PostAsync("http://localhost:8000/openai/generateimage", json);
-
         if (!response.IsSuccessStatusCode)
             return new Result<string> { Success = false, Message = "Failed to generate image" };
 
         var resultStream = await response.Content.ReadAsStreamAsync();
-
         var result = await JsonSerializer.DeserializeAsync<OpenAIImageResponse>(resultStream,
             new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
         if (result == null || result.Data == null || result.Data.Count == 0)
             return new Result<string> { Success = false, Message = "Invalid response from image service" };
 
-        var image = new Image
+        var imageUrl = result.Data[0].Url;
+        var imageId = Guid.NewGuid();
+
+        // Download image as bytes
+        var imageBytes = await httpClient.GetByteArrayAsync(imageUrl);
+
+        // Convert and save as .webp
+        using var inputStream = new MemoryStream(imageBytes);
+        using var image = await ImageSharp.LoadAsync(inputStream); // From ImageSharp
+
+        var wwwrootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "ai_pics");
+        Directory.CreateDirectory(wwwrootPath);
+
+        var fileName = $"{imageId}.webp";
+        var filePath = Path.Combine(wwwrootPath, fileName);
+
+        await image.SaveAsync(filePath, new WebpEncoder());
+
+        // Save just the file name to the DB
+        var imageEntity = new Models.Image
         {
-            Id = Guid.NewGuid(),
+            Id = imageId,
             UserId = userId,
             Prompt = prompt,
-            ImageUrl = result.Data[0].Url,
+            ImageUrl = fileName, // just the name
             CreatedAt = DateTime.UtcNow
         };
 
-        await imageRepository.SaveImageAsync(image);
+        await imageRepository.SaveImageAsync(imageEntity);
 
-        return new Result<string> { Success = true, Data = image.ImageUrl };
+        // Return relative URL for frontend
+        return new Result<string> { Success = true, Data = $"{fileName}" };
     }
 
-    public async Task<Result<Image>> GetImageByIdAsync(Guid id, int userId)
+    public async Task<Result<Models.Image>> GetImageByIdAsync(Guid id, int userId)
     {
         var image = await imageRepository.GetByIdAsync(id, userId);
 
         if (image == null)
-            return new Result<Image> { Success = false, Message = "Image not found" };
+            return new Result<Models.Image> { Success = false, Message = "Image not found" };
 
-        return new Result<Image> { Success = true, Data = image };
+        return new Result<Models.Image> { Success = true, Data = image };
     }
 
-    public async Task<ResultList<Image>> GetImagesByUserIdAsync(int userId, int page, int pageSize)
+    public async Task<ResultList<Models.Image>> GetImagesByUserIdAsync(int userId, int page, int pageSize)
     {
         // Fetch paged image list
         var images = await imageRepository.GetByUserIdAsync(userId, page, pageSize);
@@ -74,7 +97,7 @@ public class ImageService(IImageRepository imageRepository, IUserRepository user
             TotalPages = totalPages
         };
 
-        return new ResultList<Image>
+        return new ResultList<Models.Image>
         {
             Success = images.Any(),
             Data = images,

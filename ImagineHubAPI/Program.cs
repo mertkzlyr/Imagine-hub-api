@@ -61,7 +61,15 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        ctx.Context.Response.Headers.Append("Access-Control-Allow-Origin", "http://localhost:3000");
+        ctx.Context.Response.Headers.Append("Access-Control-Allow-Credentials", "true");
+        // You can add more headers if needed
+    }
+});
 app.UseCors("AllowLocalhost3000");
 app.UseAuthentication();
 app.UseMiddleware<UserIdMiddleware>();

@@ -12,7 +12,7 @@ public class DataContext(DbContextOptions<DataContext> options) : DbContext(opti
     public DbSet<PostLike> PostLikes { get; set; }
     public DbSet<PostComment> PostComments { get; set; }
     public DbSet<CommentLike> CommentLikes { get; set; }
-    public DbSet<Image> Images { get; set; }
+    public DbSet<Models.Image> Images { get; set; }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

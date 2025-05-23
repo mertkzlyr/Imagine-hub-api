@@ -27,7 +27,7 @@ public class ImageController(IImageService imageService) : ControllerBase
     }
     
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetImageById([FromQuery] Guid id)
+    public async Task<IActionResult> GetImageById(Guid id)
     {
         var userId = HttpContext.GetUserId();
         if (userId == null)
