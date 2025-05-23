@@ -7,10 +7,10 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["ImagineHubAPI/ImagineHubAPI.csproj", "ImagineHubAPI/"]
-RUN dotnet restore "ImagineHubAPI/ImagineHubAPI.csproj"
+COPY ["ImagineHubAPI.csproj", "./"]
+RUN dotnet restore "ImagineHubAPI.csproj"
 COPY . .
-WORKDIR "/src/ImagineHubAPI"
+WORKDIR "/src"
 RUN dotnet build "ImagineHubAPI.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
@@ -20,4 +20,9 @@ RUN dotnet publish "ImagineHubAPI.csproj" -c $BUILD_CONFIGURATION -o /app/publis
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+# Copy the key files to the app directory
+COPY ["public.key", "/app/public.key"]
+COPY ["private.key", "/app/private.key"]
+# Copy the entire wwwroot directory with its contents
+COPY ["wwwroot", "/app/wwwroot"]
 ENTRYPOINT ["dotnet", "ImagineHubAPI.dll"]
