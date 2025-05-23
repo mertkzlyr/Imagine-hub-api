@@ -1,3 +1,4 @@
+
 using ImagineHubAPI.Config;
 using ImagineHubAPI.Data;
 using ImagineHubAPI.Interfaces;
@@ -7,8 +8,6 @@ using ImagineHubAPI.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
-
-builder.WebHost.UseUrls("http://0.0.0.0:5169");
 
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
 builder.Services.AddJwtAuthentication(builder.Configuration);
@@ -42,15 +41,14 @@ builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddHttpClient<IImageService, ImageService>();
 
-// CORS policy allowing only your frontend origin and credentials
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowLocalhost3000", policy =>
     {
-        policy.WithOrigins("http://192.168.1.104:3000", "http://localhost:3000")  // Replace with your actual frontend URL
+        policy.WithOrigins("http://localhost:3000")
             .AllowAnyHeader()
             .AllowAnyMethod()
-            .AllowCredentials();  // Allow credentials (cookies, auth headers, etc)
+            .AllowCredentials(); // Needed if using cookies or authorization headers
     });
 });
 
