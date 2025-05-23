@@ -14,18 +14,18 @@ public class ImageService(IImageRepository imageRepository, IUserRepository user
 {
     public async Task<Result<string>> GenerateAndSaveImageAsync(string prompt, int userId)
     {
-        // Deduct token
-        var user = await userRepository.RemoveToken(userId, 1);
-        if (user == null)
-            return new Result<string> { Success = false, Message = "Insufficient generation tokens." };
-
         // Send prompt to image generation API
         var payload = new { prompt = prompt, size = "512x512" };
         var json = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
-        var response = await httpClient.PostAsync("http://localhost:8000/openai/generateimage", json);
+        var response = await httpClient.PostAsync("http://localhost:8000/api/generateimage", json);
         if (!response.IsSuccessStatusCode)
             return new Result<string> { Success = false, Message = "Failed to generate image" };
+        
+        // Deduct token
+        var user = await userRepository.RemoveToken(userId, 1);
+        if (!user)
+            return new Result<string> { Success = false, Message = "Insufficient generation tokens." };
 
         var resultStream = await response.Content.ReadAsStreamAsync();
         var result = await JsonSerializer.DeserializeAsync<OpenAIImageResponse>(resultStream,

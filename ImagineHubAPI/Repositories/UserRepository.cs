@@ -84,16 +84,16 @@ public class UserRepository(DataContext context) : IUserRepository
         return user;
     }
 
-    public async Task<User?> RemoveToken(int userId, int token)
+    public async Task<bool> RemoveToken(int userId, int token)
     {
         var user = await context.Users.FindAsync(userId);
         if (user == null || user.GenerationToken < token)
-            return null;
+            return false;
 
         user.GenerationToken -= token;
         context.Users.Update(user);
         await context.SaveChangesAsync();
 
-        return user;
+        return true;
     }
 }

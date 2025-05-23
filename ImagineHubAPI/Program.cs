@@ -44,10 +44,14 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowLocalhost3000", policy =>
     {
-        policy.WithOrigins("http://localhost:3000")
+        policy.WithOrigins(
+                "http://localhost:3000",
+                "http://192.168.1.104:3000",
+                "http://ui:3000"  // Add this for Docker container communication
+            )
             .AllowAnyHeader()
             .AllowAnyMethod()
-            .AllowCredentials(); // Needed if using cookies or authorization headers
+            .AllowCredentials();
     });
 });
 
@@ -66,6 +70,7 @@ app.UseStaticFiles(new StaticFileOptions
     OnPrepareResponse = ctx =>
     {
         ctx.Context.Response.Headers.Append("Access-Control-Allow-Origin", "http://localhost:3000");
+        ctx.Context.Response.Headers.Append("Access-Control-Allow-Origin", "http://192.168.1.104:3000");
         ctx.Context.Response.Headers.Append("Access-Control-Allow-Credentials", "true");
         // You can add more headers if needed
     }
