@@ -68,45 +68,67 @@ public class ImageService : IImageService
         if (!user)
             return new Result<string> { Success = false, Message = "Insufficient generation tokens." };
 
-        var resultStream = await response.Content.ReadAsStreamAsync();
-        var result = await JsonSerializer.DeserializeAsync<OpenAIImageResponse>(resultStream,
-            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        var responseContent = await response.Content.ReadAsStringAsync();
+        _logger.LogInformation("Raw response from AI service: {Response}", responseContent);
 
-        if (result == null || result.Data == null || result.Data.Count == 0)
-            return new Result<string> { Success = false, Message = "Invalid response from image service" };
-
-        var imageUrl = result.Data[0].Url;
-        var imageId = Guid.NewGuid();
-
-        // Download image as bytes
-        var imageBytes = await _httpClient.GetByteArrayAsync(imageUrl);
-
-        // Convert and save as .webp
-        using var inputStream = new MemoryStream(imageBytes);
-        using var image = await ImageSharp.LoadAsync(inputStream); // From ImageSharp
-
-        var wwwrootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "ai_pics");
-        Directory.CreateDirectory(wwwrootPath);
-
-        var fileName = $"{imageId}.webp";
-        var filePath = Path.Combine(wwwrootPath, fileName);
-
-        await image.SaveAsync(filePath, new WebpEncoder());
-
-        // Save just the file name to the DB
-        var imageEntity = new Models.Image
+        try
         {
-            Id = imageId,
-            UserId = userId,
-            Prompt = prompt,
-            ImageUrl = fileName, // just the name
-            CreatedAt = DateTime.UtcNow
-        };
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
 
-        await _imageRepository.SaveImageAsync(imageEntity);
+            var result = JsonSerializer.Deserialize<OpenAIImageResponse>(responseContent, options);
+            _logger.LogInformation("Deserialized response: Success={Success}, Data={Data}", 
+                result?.Success, result?.Data);
 
-        // Return relative URL for frontend
-        return new Result<string> { Success = true, Data = $"{fileName}" };
+            if (result == null || !result.Success || string.IsNullOrEmpty(result.Data))
+            {
+                _logger.LogError("Invalid response from image service: Result is null or unsuccessful");
+                return new Result<string> { Success = false, Message = "Invalid response from image service" };
+            }
+
+            var imageUrl = result.Data;
+            _logger.LogInformation("Successfully extracted image URL: {Url}", imageUrl);
+
+            var imageId = Guid.NewGuid();
+
+            // Download image as bytes
+            var imageBytes = await _httpClient.GetByteArrayAsync(imageUrl);
+
+            // Convert and save as .webp
+            using var inputStream = new MemoryStream(imageBytes);
+            using var image = await ImageSharp.LoadAsync(inputStream); // From ImageSharp
+
+            var wwwrootPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "ai_pics");
+            Directory.CreateDirectory(wwwrootPath);
+
+            var fileName = $"{imageId}.webp";
+            var filePath = Path.Combine(wwwrootPath, fileName);
+
+            await image.SaveAsync(filePath, new WebpEncoder());
+
+            // Save just the file name to the DB
+            var imageEntity = new Models.Image
+            {
+                Id = imageId,
+                UserId = userId,
+                Prompt = prompt,
+                ImageUrl = fileName, // just the name
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _imageRepository.SaveImageAsync(imageEntity);
+
+            // Return relative URL for frontend
+            return new Result<string> { Success = true, Data = $"{fileName}" };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deserializing response from image service");
+            return new Result<string> { Success = false, Message = "Error deserializing response from image service" };
+        }
     }
 
     public async Task<Result<Models.Image>> GetImageByIdAsync(Guid id, int userId)
