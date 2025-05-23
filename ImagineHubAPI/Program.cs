@@ -8,7 +8,9 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure services
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
+builder.Services.Configure<ServiceUrlsConfig>(builder.Configuration.GetSection("ServiceUrls"));
 builder.Services.AddJwtAuthentication(builder.Configuration);
 
 // Add services to the container.
@@ -38,20 +40,39 @@ builder.Services.AddScoped<PasswordHasherService>();
 builder.Services.AddScoped<IFollowService, FollowService>();
 builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
+
+// Get service URLs from configuration
+var serviceUrls = builder.Configuration.GetSection("ServiceUrls").Get<ServiceUrlsConfig>();
+
+// Log configuration values
+var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
+logger.LogInformation("ServiceUrls configuration:");
+logger.LogInformation($"WebUi: {serviceUrls?.WebUi}");
+logger.LogInformation($"WebUiNetwork: {serviceUrls?.WebUiNetwork}");
+logger.LogInformation($"AiAgent: {serviceUrls?.AiAgent}");
+
+var allowedOrigins = new List<string>();
+
+if (!string.IsNullOrEmpty(serviceUrls?.WebUi))
+    allowedOrigins.Add(serviceUrls.WebUi);
+if (!string.IsNullOrEmpty(serviceUrls?.WebUiNetwork))
+    allowedOrigins.Add(serviceUrls.WebUiNetwork);
+allowedOrigins.Add("http://ui:3000"); // Always add Docker container URL
+
+// Configure HttpClient for ImageService
 builder.Services.AddHttpClient<IImageService, ImageService>();
 
+// Configure CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowLocalhost3000", policy =>
+    options.AddPolicy("CorsPolicy", policy =>
     {
-        policy.WithOrigins(
-                "http://localhost:3000",
-                "http://192.168.1.104:3000",
-                "http://ui:3000"  // Add this for Docker container communication
-            )
-            .AllowAnyHeader()
+        policy
+            .WithOrigins(allowedOrigins.ToArray())
             .AllowAnyMethod()
-            .AllowCredentials();
+            .AllowAnyHeader()
+            .AllowCredentials()
+            .SetIsOriginAllowed(origin => true); // For development only
     });
 });
 
@@ -63,19 +84,23 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// Enable CORS - must be before other middleware
+app.UseCors("CorsPolicy");
+
 app.UseHttpsRedirection();
 
 app.UseStaticFiles(new StaticFileOptions
 {
     OnPrepareResponse = ctx =>
     {
-        ctx.Context.Response.Headers.Append("Access-Control-Allow-Origin", "http://localhost:3000");
-        ctx.Context.Response.Headers.Append("Access-Control-Allow-Origin", "http://192.168.1.104:3000");
+        if (!string.IsNullOrEmpty(serviceUrls?.WebUi))
+            ctx.Context.Response.Headers.Append("Access-Control-Allow-Origin", serviceUrls.WebUi);
+        if (!string.IsNullOrEmpty(serviceUrls?.WebUiNetwork))
+            ctx.Context.Response.Headers.Append("Access-Control-Allow-Origin", serviceUrls.WebUiNetwork);
         ctx.Context.Response.Headers.Append("Access-Control-Allow-Credentials", "true");
-        // You can add more headers if needed
     }
 });
-app.UseCors("AllowLocalhost3000");
+
 app.UseAuthentication();
 app.UseMiddleware<UserIdMiddleware>();
 app.UseAuthorization();
