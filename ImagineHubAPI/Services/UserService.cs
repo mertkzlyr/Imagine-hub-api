@@ -188,6 +188,7 @@ public class UserService(IUserRepository userRepository, ITokenService tokenServ
             return new Result<UserDto> { Success = false, Message = "User not found." };
 
         // Update allowed fields
+        user.Username = updateDto.Username ?? user.Username;
         user.Name = updateDto.Name ?? user.Name;
         user.Surname = updateDto.Surname ?? user.Surname;
         user.MiddleName = updateDto.MiddleName ?? user.MiddleName;

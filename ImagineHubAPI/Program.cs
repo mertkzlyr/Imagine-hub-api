@@ -9,6 +9,8 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.WebHost.UseUrls("http://0.0.0.0:5169");
+
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
 builder.Services.AddJwtAuthentication(builder.Configuration);
 
@@ -43,9 +45,13 @@ builder.Services.AddHttpClient<IImageService, ImageService>();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowLocalhost3000", policy =>
+    options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:3000")
+        policy.WithOrigins(
+                "http://localhost:3000",
+                "http://192.168.1.104:3000",
+                "http://78.172.156.103:3000"
+            )
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials(); // Needed if using cookies or authorization headers
@@ -66,12 +72,21 @@ app.UseStaticFiles(new StaticFileOptions
 {
     OnPrepareResponse = ctx =>
     {
-        ctx.Context.Response.Headers.Append("Access-Control-Allow-Origin", "http://localhost:3000");
-        ctx.Context.Response.Headers.Append("Access-Control-Allow-Credentials", "true");
-        // You can add more headers if needed
+        // Get the origin from the request
+        var origin = ctx.Context.Request.Headers["Origin"].ToString();
+        
+        // Check if the origin is in our allowed list
+        if (origin == "http://localhost:3000" || 
+            origin == "http://192.168.1.104:3000" || 
+            origin == "http://78.172.156.103:3000")
+        {
+            ctx.Context.Response.Headers.Append("Access-Control-Allow-Origin", origin);
+            ctx.Context.Response.Headers.Append("Access-Control-Allow-Credentials", "true");
+        }
     }
 });
-app.UseCors("AllowLocalhost3000");
+
+app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseMiddleware<UserIdMiddleware>();
 app.UseAuthorization();
