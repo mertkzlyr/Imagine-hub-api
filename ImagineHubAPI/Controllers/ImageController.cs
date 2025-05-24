@@ -71,5 +71,23 @@ public class ImageController(IImageService imageService) : ControllerBase
 
         return Ok(new { generationTokens = user.GenerationToken });
     }
+    
+    [HttpGet("stream/{filename}")]
+    [Authorize]
+    public IActionResult StreamImage(string filename)
+    {
+        var userId = HttpContext.GetUserId();
+        if (userId == null)
+            return Unauthorized(new { message = "User not authenticated." });
 
+        var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "ai_pics", filename);
+    
+        if (!System.IO.File.Exists(filePath))
+            return NotFound(new { message = "Image not found." });
+
+        var contentType = "image/webp"; // or use a file extension check
+
+        var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+        return File(stream, contentType);
+    }
 }
