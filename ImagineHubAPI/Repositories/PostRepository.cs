@@ -72,15 +72,29 @@ public class PostRepository(DataContext context) : IPostRepository
         }
     }
 
-    public async Task<ResultList<Post>> GetAllPostsAsync(int page, int pageSize)
+    public async Task<ResultList<Post>> GetAllPostsAsync(int page, int pageSize, string search)
     {
-        var totalPosts = await context.Posts.CountAsync();
-        var totalPages = (int)Math.Ceiling(totalPosts / (double)pageSize);
-
-        var posts = await context.Posts
+        // Base query
+        var query = context.Posts
             .Include(p => p.User)
             .Include(p => p.Likes)
             .Include(p => p.Comments)
+            .AsQueryable();
+
+        // Apply search filter if provided
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            search = search.Trim().ToLower();
+            query = query.Where(p =>
+                p.Description.ToLower().Contains(search) ||
+                p.User.Username.ToLower().Contains(search)
+            );
+        }
+
+        var totalPosts = await query.CountAsync();
+        var totalPages = (int)Math.Ceiling(totalPosts / (double)pageSize);
+
+        var posts = await query
             .OrderByDescending(p => p.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)

@@ -1,16 +1,10 @@
 using System.Text;
 using System.Text.Json;
-using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Webp;
-using SixLabors.ImageSharp.Processing;
 using ImageSharp = SixLabors.ImageSharp.Image; // Alias to avoid conflict
 using ImagineHubAPI.DTOs.ImageDTOs;
 using ImagineHubAPI.Interfaces;
 using ImagineHubAPI.Models;
-using ImagineHubAPI.Config;
-using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Configuration;
 
 namespace ImagineHubAPI.Services;
 

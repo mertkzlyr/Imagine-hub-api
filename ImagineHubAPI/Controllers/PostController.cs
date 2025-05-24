@@ -12,9 +12,9 @@ namespace ImagineHubAPI.Controllers;
 public class PostController(IPostService postService, ICommentService commentService) : ControllerBase
 {
     [HttpGet("posts")]
-    public async Task<IActionResult> GetAllPosts([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+    public async Task<IActionResult> GetAllPosts([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string search = "")
     {
-        var result = await postService.GetAllPostsAsync(page, pageSize);
+        var result = await postService.GetAllPostsAsync(page, pageSize, search);
 
         if (!result.Success)
             return BadRequest(new { message = result.Message });

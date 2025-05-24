@@ -102,9 +102,9 @@ public class PostService(IPostRepository postRepository) : IPostService
         };
     }
 
-    public async Task<ResultList<PostDto>> GetAllPostsAsync(int page, int pageSize)
+    public async Task<ResultList<PostDto>> GetAllPostsAsync(int page, int pageSize, string search)
     {
-        var result = await postRepository.GetAllPostsAsync(page, pageSize);
+        var result = await postRepository.GetAllPostsAsync(page, pageSize, search);
 
         var postDtos = result.Data.Select(p => new PostDto
         {
