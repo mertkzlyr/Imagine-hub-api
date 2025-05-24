@@ -168,7 +168,8 @@ public class UserService(IUserRepository userRepository, ITokenService tokenServ
             State = registerDto.State,
             Country = registerDto.Country,
             CreatedAt = DateTime.UtcNow,
-            ProfilePicture = profilePicFileName
+            ProfilePicture = profilePicFileName,
+            GenerationToken = 10
         };
 
         await userRepository.AddAsync(user);

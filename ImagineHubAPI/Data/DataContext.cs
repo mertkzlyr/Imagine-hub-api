@@ -23,13 +23,13 @@ public class DataContext(DbContextOptions<DataContext> options) : DbContext(opti
             .HasOne(uf => uf.Follower)
             .WithMany(u => u.Following)
             .HasForeignKey(uf => uf.FollowerId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<UserFollows>()
             .HasOne(uf => uf.Followee)
             .WithMany(u => u.Followers)
             .HasForeignKey(uf => uf.FolloweeId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
         
         modelBuilder.Entity<PostLike>()
             .HasKey(pl => new { pl.UserId, pl.PostId });
