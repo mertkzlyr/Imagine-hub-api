@@ -6,6 +6,7 @@ using ImagineHubAPI.Middlewares;
 using ImagineHubAPI.Repositories;
 using ImagineHubAPI.Services;
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +26,10 @@ builder.Services.AddSwaggerServices();
 builder.Services.AddDbContext<DataContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Redis
+builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(
+    builder.Configuration.GetValue<string>("Redis:Connection") ?? "localhost:6379"));
+
 // Register repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAdminRepository, AdminRepository>();
@@ -42,6 +47,7 @@ builder.Services.AddScoped<IFollowService, FollowService>();
 builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddHttpClient<IImageService, ImageService>();
+builder.Services.AddScoped<IRedisService, RedisService>();
 
 builder.Services.AddCors(options =>
 {

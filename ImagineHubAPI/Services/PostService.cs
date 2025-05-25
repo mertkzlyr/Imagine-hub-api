@@ -6,7 +6,7 @@ using ImagineHubAPI.Models;
 
 namespace ImagineHubAPI.Services;
 
-public class PostService(IPostRepository postRepository) : IPostService
+public class PostService(IPostRepository postRepository, IRedisService redisService) : IPostService
 {
     public async Task<Result<PostDto>> CreatePostAsync(int userId, CreatePostDto createPostDto)
     {
@@ -104,6 +104,11 @@ public class PostService(IPostRepository postRepository) : IPostService
 
     public async Task<ResultList<PostDto>> GetAllPostsAsync(int page, int pageSize, string search)
     {
+        string cacheKey = $"posts:page={page}:size={pageSize}:search={search}";
+        var cached = await redisService.GetAsync<ResultList<PostDto>>(cacheKey);
+        if (cached != null)
+            return cached;
+
         var result = await postRepository.GetAllPostsAsync(page, pageSize, search);
 
         var postDtos = result.Data.Select(p => new PostDto
@@ -121,13 +126,18 @@ public class PostService(IPostRepository postRepository) : IPostService
             CommentCount = p.Comments.Count
         }).ToList();
 
-        return new ResultList<PostDto>
+        var finalResult = new ResultList<PostDto>
         {
             Success = true,
             Message = result.Message,
             Data = postDtos,
             Pagination = result.Pagination
         };
+
+        // Cache result for 5 minutes
+        await redisService.SetAsync(cacheKey, finalResult, TimeSpan.FromMinutes(5));
+
+        return finalResult;
     }
 
     public async Task<ResultList<PostDto>> GetPostsByUserAsync(int userId, int page, int pageSize)
