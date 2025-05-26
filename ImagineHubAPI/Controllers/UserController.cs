@@ -103,4 +103,24 @@ public class UserController(IUserService userService) : ControllerBase
         return Ok(new { message = result.Message });
     }
 
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request)
+    {
+        var baseUrl = $"{Request.Scheme}://localhost:3000";  // Example base URL for links
+        var result = await userService.SendMagicLinkAsync(request.Email, baseUrl);
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
+    
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+    {
+        var result = await userService.ResetPasswordWithTokenAsync(request.Token, request.NewPassword);
+        if (!result.Success)
+            return BadRequest(result);
+
+        return Ok(result);
+    }
 }

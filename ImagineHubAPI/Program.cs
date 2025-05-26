@@ -3,6 +3,7 @@ using ImagineHubAPI.Config;
 using ImagineHubAPI.Data;
 using ImagineHubAPI.Interfaces;
 using ImagineHubAPI.Middlewares;
+using ImagineHubAPI.Models;
 using ImagineHubAPI.Repositories;
 using ImagineHubAPI.Services;
 using Microsoft.EntityFrameworkCore;
@@ -46,6 +47,9 @@ builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddHttpClient<IImageService, ImageService>();
 builder.Services.AddScoped<IRedisService, RedisService>();
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddScoped<IEmailService, EmailService>();
+
 
 builder.Services.AddCors(options =>
 {

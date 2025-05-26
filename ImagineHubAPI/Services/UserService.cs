@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using ImagineHubAPI.DTOs.AuthDTOs;
 using ImagineHubAPI.DTOs.PostDTOs;
 using ImagineHubAPI.DTOs.UserDTOs;
@@ -7,7 +8,7 @@ using ImagineHubAPI.Models;
 
 namespace ImagineHubAPI.Services;
 
-public class UserService(IUserRepository userRepository, ITokenService tokenService, PasswordHasherService hasher) : IUserService
+public class UserService(IUserRepository userRepository, ITokenService tokenService, PasswordHasherService hasher, IEmailService emailService) : IUserService
 {
     public async Task<Result<UserDto>> GetUserByIdAsync(int id)
     {
@@ -286,5 +287,44 @@ public class UserService(IUserRepository userRepository, ITokenService tokenServ
         {
             return new Result { Success = false, Message = $"Error deleting account: {ex.Message}" };
         }
+    }
+    
+    public async Task<Result> SendMagicLinkAsync(string email, string baseUrl)
+    {
+        var user = await userRepository.GetByEmailAsync(email);
+        if (user == null)
+            return new Result { Success = false, Message = "User not found." };
+
+        var token = tokenService.CreateMagicLinkToken(user.Id, user.Email);
+
+        var resetUrl = $"{baseUrl}/reset-password?token={token}";
+
+        await emailService.SendMagicLinkAsync(email, resetUrl);
+
+        return new Result { Success = true, Message = "Magic link sent to your email." };
+    }
+
+    public async Task<Result> ResetPasswordWithTokenAsync(string token, string newPassword)
+    {
+        var principal = tokenService.ValidateToken(token, requireMagicLinkType: true);
+
+        if (principal == null)
+            return new Result { Success = false, Message = "Invalid or expired token." };
+
+        var email = principal.FindFirst("email")?.Value
+                    ?? principal.FindFirst(ClaimTypes.Email)?.Value
+                    ?? principal.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
+
+        if (email == null)
+            return new Result { Success = false, Message = "Invalid token payload." };
+
+        var user = await userRepository.GetByEmailAsync(email);
+        if (user == null)
+            return new Result { Success = false, Message = "User not found." };
+
+        user.Password = hasher.HashPassword(newPassword);
+        await userRepository.UpdateAsync(user);
+
+        return new Result { Success = true, Message = "Password reset successful." };
     }
 }

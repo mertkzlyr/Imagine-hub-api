@@ -14,4 +14,6 @@ public interface IUserService
     Task<Result> UpdateProfilePictureAsync(int userId, IFormFile profilePicture);
     Task<Result> UpdatePasswordAsync(int userId, string currentPassword, string newPassword);
     Task<Result> DeleteAccountAsync(int userId, string password);
+    Task<Result> SendMagicLinkAsync(string email, string baseUrl);
+    Task<Result> ResetPasswordWithTokenAsync(string token, string newPassword);
 }
