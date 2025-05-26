@@ -137,31 +137,56 @@ public class ImageService : IImageService
 
     public async Task<ResultList<Models.Image>> GetImagesByUserIdAsync(int userId, int page, int pageSize)
     {
-        // Fetch paged image list
+        // Step 1: Get total count
+        var totalCount = await _imageRepository.GetImageCountByUserIdAsync(userId);
+
+        if (totalCount == 0)
+        {
+            return new ResultList<Models.Image>
+            {
+                Success = false,
+                Data = new List<Models.Image>(),
+                Message = "No images found",
+                Pagination = new PaginationInformation
+                {
+                    From = 0,
+                    To = 0,
+                    Total = 0,
+                    CurrentPage = page,
+                    PageSize = pageSize,
+                    TotalPages = 0
+                }
+            };
+        }
+
+        // Step 2: Calculate total pages
+        var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+        if (page < 1) page = 1;
+        if (page > totalPages) page = totalPages;
+
+        // Step 3: Get paginated data
         var images = await _imageRepository.GetByUserIdAsync(userId, page, pageSize);
 
-        var totalPages = (int)Math.Ceiling(images.Count / (double)pageSize);
         var from = ((page - 1) * pageSize) + 1;
         var to = from + images.Count - 1;
 
-        var pagination = new PaginationInformation
-        {
-            From = from,
-            To = to,
-            Total = images.Count,
-            CurrentPage = page,
-            PageSize = pageSize,
-            TotalPages = totalPages
-        };
-
         return new ResultList<Models.Image>
         {
-            Success = images.Any(),
+            Success = true,
             Data = images,
-            Message = images.Any() ? null : "No images found",
-            Pagination = pagination
+            Message = null,
+            Pagination = new PaginationInformation
+            {
+                From = from,
+                To = to,
+                Total = totalCount,
+                CurrentPage = page,
+                PageSize = pageSize,
+                TotalPages = totalPages
+            }
         };
     }
+
 
     public async Task<User?> GetUserByIdAsync(int userId)
     {

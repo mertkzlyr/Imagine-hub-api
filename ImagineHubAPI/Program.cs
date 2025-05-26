@@ -10,8 +10,6 @@ using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.WebHost.UseUrls("http://0.0.0.0:5169");
-
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
 builder.Services.AddJwtAuthentication(builder.Configuration);
 

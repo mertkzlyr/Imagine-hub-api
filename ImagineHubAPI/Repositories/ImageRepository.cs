@@ -28,4 +28,9 @@ public class ImageRepository(DataContext context) : IImageRepository
             .Take(pageSize)
             .ToListAsync();
     }
+
+    public async Task<int> GetImageCountByUserIdAsync(int userId)
+    {
+        return await context.Images.CountAsync(i => i.UserId == userId);
+    }
 }
