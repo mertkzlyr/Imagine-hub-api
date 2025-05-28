@@ -37,6 +37,7 @@ public class PostService(IPostRepository postRepository, IRedisService redisServ
         };
 
         var postResult = await postRepository.AddAsync(post);
+        await redisService.RemoveByPatternAsync("posts:*");
 
         if (!postResult.Success)
         {
@@ -184,7 +185,14 @@ public class PostService(IPostRepository postRepository, IRedisService redisServ
 
     public async Task<Result> DeletePostAsync(int userId, Guid postId)
     {
-        return await postRepository.DeletePostAsync(userId, postId);
+        var result = await postRepository.DeletePostAsync(userId, postId);
+
+        if (result.Success)
+        {
+            await redisService.RemoveByPatternAsync("posts:*");
+        }
+
+        return result;
     }
 
     private List<CommentDto> BuildCommentTree(List<PostComment> allComments, Guid? parentId = null)

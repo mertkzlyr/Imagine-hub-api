@@ -27,4 +27,16 @@ public class RedisService : IRedisService
     {
         await _db.KeyDeleteAsync(key);
     }
+    
+    public async Task RemoveByPatternAsync(string pattern)
+    {
+        var endpoints = _db.Multiplexer.GetEndPoints();
+        var server = _db.Multiplexer.GetServer(endpoints.First());
+
+        foreach (var key in server.Keys(pattern: pattern))
+        {
+            await _db.KeyDeleteAsync(key);
+        }
+    }
+
 }
